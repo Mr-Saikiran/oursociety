@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { BookingButton, UpcomingBookings } from './booking-button'
+import { all } from '@/lib/repo'
 import {
   Trees,
   Building2,
@@ -60,17 +62,15 @@ function AmenityCard({ a }: { a: Amenity }) {
           </p>
         )}
         {a.bookable && a.status !== 'planned' && (
-          <Button variant="outline" size="sm" className="w-full">
-            <CalendarCheck data-icon="inline-start" />
-            Request booking
-          </Button>
+          <BookingButton amenity={a.name} />
         )}
       </CardContent>
     </Card>
   )
 }
 
-export default function AmenitiesPage() {
+export default async function AmenitiesPage() {
+  const bookings = await all('bookings')
   const categories = Array.from(new Set(amenities.map((a) => a.category)))
   return (
     <div className="mx-auto max-w-6xl">
@@ -87,6 +87,9 @@ export default function AmenitiesPage() {
         {amenities.map((a) => (
           <AmenityCard key={a.id} a={a} />
         ))}
+      </div>
+      <div className="mt-8">
+        <UpcomingBookings bookings={bookings} />
       </div>
     </div>
   )

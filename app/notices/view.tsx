@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Paperclip, Plus, Users, MapPin } from 'lucide-react'
+import { Paperclip, Plus, Users, MapPin, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,13 +11,18 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { notices as seed, type Notice } from '@/lib/data-extra'
+import type { Notice } from '@/lib/data-extra'
+import { createNotice, deleteNotice } from '@/app/actions/data'
+import { useAction } from '@/components/use-action'
+import { useCanEdit } from '@/components/session-provider'
+import { ReadOnlyNote } from '@/components/read-only-note'
 
 const fmt = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
 const categories: Notice['category'][] = ['General', 'Maintenance', 'Event', 'Security', 'Urgent']
 
-function NewNotice({ onAdd }: { onAdd: (n: Notice) => void }) {
+function NewNotice() {
   const [open, setOpen] = useState(false)
+  const { pending, run } = useAction()
   const [audience, setAudience] = useState<Notice['audience']>('all')
   const [category, setCategory] = useState<Notice['category']>('General')
 
@@ -26,18 +31,18 @@ function NewNotice({ onAdd }: { onAdd: (n: Notice) => void }) {
     const f = new FormData(e.currentTarget)
     const files = (f.getAll('files') as File[]).filter((x) => x.size > 0).map((x) => x.name)
     const roads = String(f.get('roads') ?? '').trim()
-    onAdd({
-      id: `n-${Date.now()}`,
-      title: String(f.get('title')).trim(),
-      body: String(f.get('body')).trim(),
-      date: new Date().toISOString().slice(0, 10),
-      audience,
-      audienceLabel: audience === 'all' ? 'All members' : `Road ${roads}`,
-      category,
-      attachments: files,
-    })
-    toast.success(`Notice published and emailed to ${audience === 'all' ? 'all members' : `Road ${roads} members`}`)
-    setOpen(false)
+    run(
+      () =>
+        createNotice({
+          title: String(f.get('title')),
+          body: String(f.get('body')),
+          audience,
+          category,
+          roads,
+          attachments: files,
+        }),
+      () => setOpen(false),
+    )
   }
 
   return (
@@ -77,19 +82,22 @@ function NewNotice({ onAdd }: { onAdd: (n: Notice) => void }) {
             <div className="flex flex-col gap-1.5"><Label htmlFor="roads">Roads</Label><Input id="roads" name="roads" required placeholder="e.g. 4B, 4C" /></div>
           )}
           <div className="flex flex-col gap-1.5"><Label htmlFor="files">Attachments</Label><Input id="files" name="files" type="file" multiple /></div>
-          <DialogFooter><Button type="submit">Publish</Button></DialogFooter>
+          <DialogFooter><Button type="submit" disabled={pending}>Publish</Button></DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   )
 }
 
-export function NoticesView() {
-  const [items, setItems] = useState<Notice[]>(seed)
+export function NoticesView({ items }: { items: Notice[] }) {
+  const canEdit = useCanEdit()
+  const { pending, run } = useAction()
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex justify-end"><NewNotice onAdd={(n) => setItems((p) => [n, ...p])} /></div>
+      <div className="flex justify-end">
+        {canEdit ? <NewNotice /> : <ReadOnlyNote action="publish notices" />}
+      </div>
       <div className="flex flex-col gap-3">
         {items.map((n) => (
           <Card key={n.id}>
@@ -101,6 +109,18 @@ export function NoticesView() {
                   {n.audienceLabel}
                 </span>
                 <span className="text-xs text-muted-foreground">· {fmt(n.date)}</span>
+                {canEdit && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="ml-auto"
+                    aria-label={`Delete notice: ${n.title}`}
+                    disabled={pending}
+                    onClick={() => confirm(`Delete "${n.title}"?`) && run(() => deleteNotice(n.id))}
+                  >
+                    <Trash2 />
+                  </Button>
+                )}
               </div>
               <p className="font-medium">{n.title}</p>
               <p className="text-sm leading-relaxed text-muted-foreground">{n.body}</p>

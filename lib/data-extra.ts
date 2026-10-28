@@ -132,15 +132,15 @@ export type Poll = {
 
 export const polls: Poll[] = [
   {
-    id: 'p1', question: 'Where should the box cricket court come up?', description: 'Proposed in AGM 2025. Pick the preferred location.', closes: '2026-04-15',
+    id: 'p1', question: 'Where should the box cricket court come up?', description: 'Proposed in AGM 2025. Pick the preferred location.', closes: '2026-12-15',
     options: [{ id: 'a', label: 'Road 5C open plot', votes: 142 }, { id: 'b', label: 'Near community hall', votes: 88 }, { id: 'c', label: 'Not needed', votes: 31 }],
   },
   {
-    id: 'p2', question: 'Increase annual maintenance to ₹10,800 from 2027–28?', description: 'To cover rising security and water costs.', closes: '2026-04-30',
+    id: 'p2', question: 'Increase annual maintenance to ₹10,800 from 2027–28?', description: 'To cover rising security and water costs.', closes: '2026-12-31',
     options: [{ id: 'a', label: 'Yes', votes: 120 }, { id: 'b', label: 'No', votes: 97 }, { id: 'c', label: 'Phased increase', votes: 64 }],
   },
   {
-    id: 'p3', question: 'Preferred day for monthly clean-up drive', description: 'Closed — result applied from March.', closes: '2026-03-10',
+    id: 'p3', question: 'Preferred day for monthly clean-up drive', description: 'Closed — result applies from November.', closes: '2026-10-10',
     options: [{ id: 'a', label: 'First Saturday', votes: 174 }, { id: 'b', label: 'Last Sunday', votes: 119 }],
   },
 ]

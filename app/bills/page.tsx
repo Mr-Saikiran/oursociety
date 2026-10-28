@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { PageHeader } from '@/components/page-header'
+import { all } from '@/lib/repo'
 import { BillsView } from './view'
 
 export const metadata: Metadata = {
@@ -7,11 +8,12 @@ export const metadata: Metadata = {
   description: 'Generate bills for any billing frequency and send them to members by SMS or email.',
 }
 
-export default function Page() {
+export default async function Page() {
+  const [records, runs] = await Promise.all([all('maintenance'), all('bills')])
   return (
     <div>
       <PageHeader title="Maintenance Bills" description="Generate bills for any billing frequency and send them to members by SMS or email." />
-      <BillsView />
+      <BillsView records={records} runs={runs} />
     </div>
   )
 }

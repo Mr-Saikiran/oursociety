@@ -9,7 +9,12 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { maintenanceRecords, rupee, society } from '@/lib/data'
+import { rupee, society, type MaintenanceRecord } from '@/lib/data'
+import type { BillRun } from '@/lib/repo'
+import { recordBillRun } from '@/app/actions/data'
+import { useAction } from '@/components/use-action'
+import { useCanEdit } from '@/components/session-provider'
+import { ReadOnlyNote } from '@/components/read-only-note'
 
 const frequencies = {
   annual: { label: 'Annual (2026–27)', divisor: 1, period: 'FY 2026–27' },
@@ -18,7 +23,9 @@ const frequencies = {
 } as const
 type Frequency = keyof typeof frequencies
 
-export function BillsView() {
+export function BillsView({ records, runs }: { records: MaintenanceRecord[]; runs: BillRun[] }) {
+  const canEdit = useCanEdit()
+  const { pending, run } = useAction()
   const [freq, setFreq] = useState<Frequency>('annual')
   const [channel, setChannel] = useState<'sms' | 'email' | 'both'>('both')
   const [generated, setGenerated] = useState(false)
@@ -27,12 +34,12 @@ export function BillsView() {
   const f = frequencies[freq]
   const bills = useMemo(
     () =>
-      maintenanceRecords.map((r) => {
+      records.map((r) => {
         const current = Math.round(society.annualMaintenance / f.divisor)
         const arrears = r.dueAmount
         return { ...r, current, arrears, total: current + arrears, billNo: `RA/${freq.slice(0, 1).toUpperCase()}/26-27/${r.plotNo.padStart(3, '0')}` }
       }),
-    [f.divisor, freq],
+    [f.divisor, freq, records],
   )
   const totalBilled = bills.reduce((s, b) => s + b.total, 0)
 
@@ -43,12 +50,22 @@ export function BillsView() {
   }
 
   function sendAll() {
-    setSent(new Set(bills.map((b) => b.billNo)))
-    toast.success(`Bills sent via ${channel === 'both' ? 'SMS and email' : channel.toUpperCase()}`)
+    run(
+      () =>
+        recordBillRun({
+          frequency: freq,
+          period: f.period,
+          channel: channel === 'both' ? 'SMS + email' : channel.toUpperCase(),
+          count: bills.length,
+          total: totalBilled,
+        }),
+      () => setSent(new Set(bills.map((b) => b.billNo))),
+    )
   }
 
   return (
     <div className="flex flex-col gap-5">
+      {!canEdit && <ReadOnlyNote action="generate and send bills" />}
       <Card>
         <CardContent className="grid gap-4 p-5 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
           <div className="flex flex-col gap-1.5">
@@ -73,7 +90,7 @@ export function BillsView() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={generate}>Generate bills</Button>
+          <Button onClick={generate} disabled={!canEdit}>Generate bills</Button>
         </CardContent>
       </Card>
 
@@ -83,7 +100,7 @@ export function BillsView() {
             <p className="text-sm text-muted-foreground">
               {bills.length} bills for <span className="font-medium text-foreground">{f.period}</span> · total {rupee(totalBilled)}
             </p>
-            <Button variant="outline" onClick={sendAll} disabled={sent.size === bills.length}>
+            <Button variant="outline" onClick={sendAll} disabled={!canEdit || pending || sent.size === bills.length}>
               {channel === 'email' ? <Mail data-icon="inline-start" /> : channel === 'sms' ? <MessageSquare data-icon="inline-start" /> : <Send data-icon="inline-start" />}
               {sent.size === bills.length ? 'All sent' : 'Send all'}
             </Button>
@@ -121,6 +138,41 @@ export function BillsView() {
             </CardContent>
           </Card>
         </>
+      )}
+      {runs.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold tracking-tight">Bill runs</h2>
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Period</TableHead>
+                    <TableHead className="hidden sm:table-cell">Sent via</TableHead>
+                    <TableHead className="text-right">Bills</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="hidden sm:table-cell">By</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {runs.map((r) => (
+                    <TableRow key={r.id}>
+                      <TableCell>
+                        <p className="font-medium">{r.period}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(r.sentAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">{r.channel}</TableCell>
+                      <TableCell className="text-right">{r.count}</TableCell>
+                      <TableCell className="text-right font-medium">{rupee(r.total)}</TableCell>
+                      <TableCell className="hidden text-muted-foreground sm:table-cell">{r.sentBy}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+          <p className="text-xs text-muted-foreground">Bill runs are recorded here. Actual SMS and email delivery needs a messaging provider to be connected.</p>
+        </section>
       )}
     </div>
   )

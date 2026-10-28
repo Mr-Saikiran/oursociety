@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { PageHeader } from '@/components/page-header'
+import { all } from '@/lib/repo'
 import { AccountingView } from './view'
 
 export const metadata: Metadata = {
@@ -7,11 +8,12 @@ export const metadata: Metadata = {
   description: 'Society income, expenses and ledger, from billing to year-end statements.',
 }
 
-export default function Page() {
+export default async function Page() {
+  const entries = await all('ledger')
   return (
     <div>
       <PageHeader title="Accounting" description="Society income, expenses and ledger, from billing to year-end statements." />
-      <AccountingView />
+      <AccountingView entries={entries} />
     </div>
   )
 }

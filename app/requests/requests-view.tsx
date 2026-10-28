@@ -29,10 +29,13 @@ import {
 } from '@/components/ui/dialog'
 import {
   requestCategories,
-  serviceRequests,
   type RequestCategory,
   type ServiceRequest,
 } from '@/lib/data'
+import { createRequest, updateRequest } from '@/app/actions/data'
+import { useAction } from '@/components/use-action'
+import { useCanEdit } from '@/components/session-provider'
+import { ReadOnlyNote } from '@/components/read-only-note'
 
 const icons: Record<string, LucideIcon> = { Trash2, Waves, Cctv, Zap, TrafficCone }
 
@@ -59,7 +62,48 @@ const priorityVariant: Record<ServiceRequest['priority'], 'destructive' | 'secon
   low: 'outline',
 }
 
-function TicketCard({ req }: { req: ServiceRequest }) {
+function UpdateDialog({ req }: { req: ServiceRequest }) {
+  const [open, setOpen] = useState(false)
+  const [status, setStatus] = useState(req.status)
+  const [note, setNote] = useState('')
+  const { pending, run } = useAction()
+  const statusItems = (Object.keys(statusLabel) as ServiceRequest['status'][]).map((s) => ({ value: s, label: statusLabel[s] }))
+  return (
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setStatus(req.status); setNote('') } }}>
+      <DialogTrigger render={<Button variant="outline" size="sm" />}>Update</DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Update {req.ticketNo}</DialogTitle>
+          <DialogDescription>{req.title}</DialogDescription>
+        </DialogHeader>
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={(e) => {
+            e.preventDefault()
+            run(() => updateRequest(req.id, status, note), () => setOpen(false))
+          }}
+        >
+          <div className="flex flex-col gap-1.5">
+            <Label>Status</Label>
+            <Select items={statusItems} value={status} onValueChange={(v) => setStatus(v as ServiceRequest['status'])}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {statusItems.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor={`note-${req.id}`}>Update note</Label>
+            <Textarea id={`note-${req.id}`} rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Plumber assigned, visit on Monday" />
+          </div>
+          <DialogFooter><Button type="submit" disabled={pending}>Save update</Button></DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function TicketCard({ req, canEdit }: { req: ServiceRequest; canEdit: boolean }) {
   const cat = requestCategories.find((c) => c.id === req.category)
   const Icon = (cat && icons[cat.icon]) || Zap
   return (
@@ -102,12 +146,17 @@ function TicketCard({ req }: { req: ServiceRequest }) {
           </span>
         </div>
 
-        {req.assignedTo && (
+        <div className="flex items-center justify-between gap-3">
           <p className="text-sm">
-            <span className="text-muted-foreground">Assigned to: </span>
-            {req.assignedTo}
+            {req.assignedTo && (
+              <>
+                <span className="text-muted-foreground">Assigned to: </span>
+                {req.assignedTo}
+              </>
+            )}
           </p>
-        )}
+          {canEdit && <UpdateDialog req={req} />}
+        </div>
 
         <ol className="flex flex-col gap-2 border-l pl-4">
           {req.updates.map((u, i) => (
@@ -123,8 +172,9 @@ function TicketCard({ req }: { req: ServiceRequest }) {
   )
 }
 
-function NewRequestDialog({ onCreate }: { onCreate: (r: ServiceRequest) => void }) {
+function NewRequestDialog() {
   const [open, setOpen] = useState(false)
+  const { pending, run } = useAction()
   const [category, setCategory] = useState<RequestCategory | ''>('')
   const [priority, setPriority] = useState<ServiceRequest['priority']>('medium')
 
@@ -135,27 +185,25 @@ function NewRequestDialog({ onCreate }: { onCreate: (r: ServiceRequest) => void 
       toast.error('Please choose a category')
       return
     }
-    const today = new Date().toISOString().slice(0, 10)
-    const next = serviceRequests.length + 162
-    const req: ServiceRequest = {
-      id: `req-new-${Date.now()}`,
-      ticketNo: `RA-2026-0${next}`,
-      category,
-      title: String(f.get('title')).trim(),
-      description: String(f.get('description')).trim(),
-      plotNo: String(f.get('plotNo')).trim(),
-      road: String(f.get('road')).trim(),
-      raisedBy: String(f.get('raisedBy')).trim() || 'Resident',
-      raisedOn: today,
-      status: 'open',
-      priority,
-      updates: [{ on: today, note: 'Ticket raised.' }],
-    }
-    onCreate(req)
-    toast.success(`Ticket ${req.ticketNo} raised`)
-    setOpen(false)
-    setCategory('')
-    setPriority('medium')
+    const form = e.currentTarget
+    run(
+      () =>
+        createRequest({
+          category,
+          priority,
+          title: String(f.get('title')),
+          description: String(f.get('description')),
+          plotNo: String(f.get('plotNo')),
+          road: String(f.get('road')),
+          raisedBy: String(f.get('raisedBy')),
+        }),
+      () => {
+        form.reset()
+        setOpen(false)
+        setCategory('')
+        setPriority('medium')
+      },
+    )
   }
 
   return (
@@ -227,7 +275,7 @@ function NewRequestDialog({ onCreate }: { onCreate: (r: ServiceRequest) => void 
           </div>
 
           <DialogFooter>
-            <Button type="submit">Submit request</Button>
+            <Button type="submit" disabled={pending}>Submit request</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -235,8 +283,8 @@ function NewRequestDialog({ onCreate }: { onCreate: (r: ServiceRequest) => void 
   )
 }
 
-export function RequestsView() {
-  const [items, setItems] = useState<ServiceRequest[]>(serviceRequests)
+export function RequestsView({ items }: { items: ServiceRequest[] }) {
+  const canEdit = useCanEdit()
   const [category, setCategory] = useState<'all' | RequestCategory>('all')
   const [tab, setTab] = useState<'all' | ServiceRequest['status']>('all')
 
@@ -284,7 +332,7 @@ export function RequestsView() {
             ))}
           </SelectContent>
         </Select>
-        <NewRequestDialog onCreate={(r) => setItems((prev) => [r, ...prev])} />
+        {canEdit ? <NewRequestDialog /> : <ReadOnlyNote action="raise or update requests" />}
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
@@ -298,7 +346,7 @@ export function RequestsView() {
           {filtered.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted-foreground">No requests match these filters.</p>
           ) : (
-            filtered.map((r) => <TicketCard key={r.id} req={r} />)
+            filtered.map((r) => <TicketCard key={r.id} req={r} canEdit={canEdit} />)
           )}
         </TabsContent>
       </Tabs>

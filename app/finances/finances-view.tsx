@@ -114,7 +114,7 @@ export function FinancesView() {
                     <p className="text-xs text-muted-foreground">Closing balance</p>
                     <p className="font-serif text-xl font-semibold">{rupee(active.closingBalance)}</p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => window.print()}>
                     <Download data-icon="inline-start" />
                     Export PDF
                   </Button>

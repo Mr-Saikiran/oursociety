@@ -33,3 +33,6 @@ android/local.properties
 # iOS build outputs
 ios-app/node_modules/
 ios-app/ios/
+
+# Local member store (dev only)
+.data/

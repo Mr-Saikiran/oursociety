@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Bell, Menu, Search } from 'lucide-react'
+import { Menu, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { navGroups, navItems, mobilePrimaryHrefs } from '@/lib/nav'
 import { society } from '@/lib/data'
@@ -11,6 +11,11 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { SearchDialog } from '@/components/search-dialog'
+import { Notifications } from '@/components/notifications'
+import { UserMenu } from '@/components/user-menu'
+import { useSession } from '@/components/session-provider'
+import type { LiveData } from '@/lib/live'
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
@@ -69,11 +74,40 @@ function Brand({ compact }: { compact?: boolean }) {
   )
 }
 
+function SidebarFooter() {
+  const user = useSession()
+  const pathname = usePathname()
+  if (user) {
+    return (
+      <Link
+        href="/settings"
+        className={cn(
+          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+          pathname === '/settings'
+            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+        )}
+      >
+        <Settings className="size-[18px] shrink-0" />
+        Settings
+      </Link>
+    )
+  }
+  return (
+    <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/40 p-3 text-xs text-sidebar-foreground/70">
+      <p className="font-medium text-sidebar-foreground">Read-only view</p>
+      <p className="mt-1">Committee members can sign in to make changes.</p>
+    </div>
+  )
+}
+
 function currentTitle(pathname: string) {
+  if (pathname === '/settings') return 'Settings'
+  if (pathname === '/login') return 'Sign in'
   return navItems.find((i) => i.href === pathname)?.label ?? 'OurSociety'
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children, live }: { children: React.ReactNode; live: LiveData }) {
   const pathname = usePathname()
   return (
     <div className="min-h-dvh bg-background lg:grid lg:grid-cols-[17rem_1fr]">
@@ -85,10 +119,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <ScrollArea className="-mx-1 min-h-0 flex-1 px-1">
           <NavLinks />
         </ScrollArea>
-        <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/40 p-3 text-xs text-sidebar-foreground/70">
-          <p className="font-medium text-sidebar-foreground">{society.acronym} Community Hall</p>
-          <p className="mt-1">{society.location}</p>
-        </div>
+        <SidebarFooter />
       </aside>
 
       <div className="flex min-w-0 flex-col">
@@ -126,17 +157,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </p>
 
           <div className="ml-auto flex items-center gap-1">
-            <Button variant="ghost" size="icon" aria-label="Search" className="hidden sm:inline-flex">
-              <Search />
-            </Button>
+            <SearchDialog live={live} />
             <ThemeToggle />
-            <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
-              <Bell />
-              <span className="absolute top-2 right-2 size-2 rounded-full bg-accent ring-2 ring-background" aria-hidden />
-            </Button>
-            <div className="ml-1 flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-sm font-semibold text-primary-foreground shadow-sm">
-              RA
-            </div>
+            <Notifications live={live} />
+            <UserMenu />
           </div>
         </header>
 

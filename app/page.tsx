@@ -18,12 +18,16 @@ import {
   rupeeLakh,
   maintenanceSummary,
   meetings,
-  serviceRequests,
-  announcements,
   financialStatements,
 } from '@/lib/data'
+import { all } from '@/lib/repo'
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [serviceRequests, notices] = await Promise.all([all('requests'), all('notices')])
+  const announcements = [...notices]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 4)
+    .map((n) => ({ id: n.id, date: n.date, title: n.title, body: n.body, tag: n.category }))
   const upcoming = meetings.filter((m) => m.status === 'upcoming').sort((a, b) => a.date.localeCompare(b.date))
   const openRequests = serviceRequests.filter((r) => r.status !== 'resolved')
   const paidPct = Math.round((maintenanceSummary.paidPlots / maintenanceSummary.totalPlots) * 100)
@@ -54,7 +58,7 @@ export default function DashboardPage() {
     {
       label: 'Open requests',
       value: String(openRequests.length),
-      hint: `${serviceRequests.length} total this month`,
+      hint: `${serviceRequests.length} total`,
       icon: Wrench,
       href: '/requests',
     },

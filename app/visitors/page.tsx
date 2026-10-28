@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { PageHeader } from '@/components/page-header'
+import { all } from '@/lib/repo'
 import { VisitorsView } from './view'
 
 export const metadata: Metadata = {
@@ -7,11 +8,12 @@ export const metadata: Metadata = {
   description: 'Verify every visitor with residents before they enter the premises.',
 }
 
-export default function Page() {
+export default async function Page() {
+  const items = await all('visitors')
   return (
     <div>
       <PageHeader title="Visitor Management" description="Verify every visitor with residents before they enter the premises." />
-      <VisitorsView />
+      <VisitorsView items={items} />
     </div>
   )
 }

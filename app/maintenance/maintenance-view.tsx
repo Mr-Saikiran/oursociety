@@ -17,7 +17,9 @@ import {
 } from '@/components/ui/table'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
-import { maintenanceRecords, maintenanceSummary, rupee, rupeeLakh, type MaintenanceRecord } from '@/lib/data'
+import { maintenanceSummary, rupee, rupeeLakh, type MaintenanceRecord } from '@/lib/data'
+import { useCanEdit } from '@/components/session-provider'
+import { RecordPayment } from './record-payment'
 
 const statusMeta = {
   paid: { label: 'Paid', variant: 'secondary' as const, icon: CheckCircle2, className: 'text-primary' },
@@ -29,12 +31,13 @@ function initials(name: string) {
   return name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase()
 }
 
-export function MaintenanceView() {
+export function MaintenanceView({ records }: { records: MaintenanceRecord[] }) {
+  const canEdit = useCanEdit()
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState('all')
 
   const rows = useMemo(() => {
-    return maintenanceRecords.filter((r) => {
+    return records.filter((r) => {
       const matchesQ =
         !q ||
         r.owner.toLowerCase().includes(q.toLowerCase()) ||
@@ -110,11 +113,12 @@ export function MaintenanceView() {
                   <TableHead className="text-right">Paid</TableHead>
                   <TableHead className="text-right">Due</TableHead>
                   <TableHead>Last paid</TableHead>
+                  {canEdit && <TableHead><span className="sr-only">Actions</span></TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.map((r) => (
-                  <MemberRow key={`${r.road}-${r.plotNo}`} r={r} />
+                  <MemberRow key={`${r.road}-${r.plotNo}`} r={r} canEdit={canEdit} />
                 ))}
               </TableBody>
             </Table>
@@ -146,6 +150,7 @@ export function MaintenanceView() {
                       )}
                     </div>
                   </CardContent>
+                  {canEdit && r.dueAmount > 0 && <div className="px-4 pb-4"><RecordPayment record={r} /></div>}
                 </Card>
               )
             })}
@@ -153,13 +158,13 @@ export function MaintenanceView() {
         </>
       )}
       <p className="text-center text-xs text-muted-foreground">
-        Showing {rows.length} of {maintenanceRecords.length} sample records. Full ledger of {maintenanceSummary.totalPlots} plots is maintained by the Treasurer.
+        Showing {rows.length} of {records.length} records. Full ledger of {maintenanceSummary.totalPlots} plots is maintained by the Treasurer.
       </p>
     </div>
   )
 }
 
-function MemberRow({ r }: { r: MaintenanceRecord }) {
+function MemberRow({ r, canEdit }: { r: MaintenanceRecord; canEdit: boolean }) {
   const meta = statusMeta[r.status]
   const Icon = meta.icon
   return (
@@ -188,6 +193,7 @@ function MemberRow({ r }: { r: MaintenanceRecord }) {
       <TableCell className="text-muted-foreground">
         {r.lastPaid ? new Date(r.lastPaid).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' }) : '—'}
       </TableCell>
+      {canEdit && <TableCell className="text-right">{r.dueAmount > 0 && <RecordPayment record={r} />}</TableCell>}
     </TableRow>
   )
 }

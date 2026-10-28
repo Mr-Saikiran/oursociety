@@ -10,7 +10,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { visitors as seed, type Visitor } from '@/lib/data-extra'
+import type { Visitor } from '@/lib/data-extra'
+import { createVisitor, setVisitorStatus } from '@/app/actions/data'
+import { useAction } from '@/components/use-action'
+import { useCanEdit } from '@/components/session-provider'
+import { ReadOnlyNote } from '@/components/read-only-note'
 
 const statusLabel: Record<Visitor['status'], string> = {
   pending: 'Awaiting approval',
@@ -28,25 +32,26 @@ const statusVariant: Record<Visitor['status'], 'default' | 'secondary' | 'outlin
 }
 const purposes: Visitor['purpose'][] = ['Guest', 'Delivery', 'Service', 'Cab', 'Contractor']
 
-function PreApprove({ onAdd }: { onAdd: (v: Visitor) => void }) {
+function PreApprove() {
   const [open, setOpen] = useState(false)
+  const { pending, run } = useAction()
   const [purpose, setPurpose] = useState<Visitor['purpose']>('Guest')
 
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const f = new FormData(e.currentTarget)
-    onAdd({
-      id: `v-${Date.now()}`,
-      name: String(f.get('name')).trim(),
-      phone: String(f.get('phone')).trim(),
-      purpose,
-      visiting: `Plot ${String(f.get('plot')).trim()}, ${String(f.get('road')).trim()}`,
-      resident: String(f.get('resident')).trim() || 'Resident',
-      expectedAt: String(f.get('when')).replace('T', ' '),
-      status: 'approved',
-    })
-    toast.success('Visitor pre-approved. Gate security has been notified.')
-    setOpen(false)
+    run(
+      () =>
+        createVisitor({
+          name: String(f.get('name')),
+          phone: String(f.get('phone')),
+          purpose,
+          visiting: `Plot ${String(f.get('plot')).trim()}, ${String(f.get('road')).trim()}`,
+          resident: String(f.get('resident')),
+          expectedAt: String(f.get('when')).replace('T', ' '),
+        }),
+      () => setOpen(false),
+    )
   }
 
   return (
@@ -78,20 +83,17 @@ function PreApprove({ onAdd }: { onAdd: (v: Visitor) => void }) {
             <div className="flex flex-col gap-1.5"><Label htmlFor="resident">Resident</Label><Input id="resident" name="resident" /></div>
           </div>
           <div className="flex flex-col gap-1.5"><Label htmlFor="when">Expected at</Label><Input id="when" name="when" type="datetime-local" required /></div>
-          <DialogFooter><Button type="submit">Approve</Button></DialogFooter>
+          <DialogFooter><Button type="submit" disabled={pending}>Approve</Button></DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   )
 }
 
-export function VisitorsView() {
-  const [items, setItems] = useState<Visitor[]>(seed)
-
-  const setStatus = (id: string, status: Visitor['status'], msg: string) => {
-    setItems((p) => p.map((v) => (v.id === id ? { ...v, status } : v)))
-    toast.success(msg)
-  }
+export function VisitorsView({ items }: { items: Visitor[] }) {
+  const canEdit = useCanEdit()
+  const { pending, run } = useAction()
+  const setStatus = (id: string, status: Visitor['status']) => run(() => setVisitorStatus(id, status))
 
   const count = (s: Visitor['status']) => items.filter((v) => v.status === s).length
 
@@ -106,7 +108,9 @@ export function VisitorsView() {
         ))}
       </div>
 
-      <div className="flex justify-end"><PreApprove onAdd={(v) => setItems((p) => [v, ...p])} /></div>
+      <div className="flex justify-end">
+        {canEdit ? <PreApprove /> : <ReadOnlyNote action="approve or check in visitors" />}
+      </div>
 
       <div className="flex flex-col gap-3">
         {items.map((v) => (
@@ -125,14 +129,14 @@ export function VisitorsView() {
                 </div>
               </div>
               <div className="flex shrink-0 gap-2">
-                {v.status === 'pending' && (
+                {canEdit && v.status === 'pending' && (
                   <>
-                    <Button size="sm" onClick={() => setStatus(v.id, 'approved', `${v.name} approved`)}>Approve</Button>
-                    <Button size="sm" variant="outline" onClick={() => setStatus(v.id, 'denied', `${v.name} denied`)}>Deny</Button>
+                    <Button size="sm" disabled={pending} onClick={() => setStatus(v.id, 'approved')}>Approve</Button>
+                    <Button size="sm" disabled={pending} variant="outline" onClick={() => setStatus(v.id, 'denied')}>Deny</Button>
                   </>
                 )}
-                {v.status === 'approved' && <Button size="sm" variant="outline" onClick={() => setStatus(v.id, 'inside', `${v.name} checked in`)}>Check in</Button>}
-                {v.status === 'inside' && <Button size="sm" variant="outline" onClick={() => setStatus(v.id, 'exited', `${v.name} checked out`)}>Check out</Button>}
+                {canEdit && v.status === 'approved' && <Button size="sm" disabled={pending} variant="outline" onClick={() => setStatus(v.id, 'inside')}>Check in</Button>}
+                {canEdit && v.status === 'inside' && <Button size="sm" disabled={pending} variant="outline" onClick={() => setStatus(v.id, 'exited')}>Check out</Button>}
               </div>
             </CardContent>
           </Card>

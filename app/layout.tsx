@@ -4,6 +4,9 @@ import { Manrope } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from '@/components/ui/sonner'
 import { AppShell } from '@/components/app-shell'
+import { SessionProvider } from '@/components/session-provider'
+import { getCurrentUser } from '@/lib/auth'
+import { all } from '@/lib/repo'
 import './globals.css'
 
 const manrope = Manrope({
@@ -40,18 +43,26 @@ export const viewport: Viewport = {
   maximumScale: 5,
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const [user, notices, requests, maintenance] = await Promise.all([
+    getCurrentUser(),
+    all('notices'),
+    all('requests'),
+    all('maintenance'),
+  ])
   return (
     <html lang="en" className="bg-background" suppressHydrationWarning>
       <body
         className={`${manrope.variable} font-sans antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <AppShell>{children}</AppShell>
+          <SessionProvider user={user}>
+            <AppShell live={{ notices, requests, maintenance }}>{children}</AppShell>
+          </SessionProvider>
           <Toaster position="top-center" />
         </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
