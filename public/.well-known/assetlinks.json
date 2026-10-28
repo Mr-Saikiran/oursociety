@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.vercel.oursociety",
+      "sha256_cert_fingerprints": [
+        "9F:94:29:70:C8:23:BD:0D:F8:4D:B1:5E:DD:04:03:06:7E:C4:DB:1E:1A:E8:53:F7:EB:24:F2:74:46:BE:39:DD"
+      ]
+    }
+  }
+]

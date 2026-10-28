@@ -1,0 +1,10 @@
+{
+  "name": "oursociety-ios",
+  "private": true,
+  "description": "iOS shell for OurSociety. Loads https://oursociety.vercel.app in a native Capacitor app.",
+  "dependencies": {
+    "@capacitor/cli": "^7.4.0",
+    "@capacitor/core": "^7.4.0",
+    "@capacitor/ios": "^7.4.0"
+  }
+}

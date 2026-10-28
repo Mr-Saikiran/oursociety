@@ -29,3 +29,7 @@ android/local.properties
 *.apk
 *.aab
 *.idsig
+
+# iOS build outputs
+ios-app/node_modules/
+ios-app/ios/
