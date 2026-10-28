@@ -38,6 +38,7 @@ export function ContactsView() {
                       size="icon"
                       variant={g === 'Emergency' ? 'destructive' : 'outline'}
                       aria-label={`Call ${c.name}`}
+                      nativeButton={false}
                       render={<a href={`tel:${c.phone.replace(/\s/g, '')}`} />}
                     >
                       <Phone />

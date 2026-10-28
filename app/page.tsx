@@ -146,7 +146,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">Due</p>
                 </div>
               </div>
-              <Button variant="outline" className="w-full" render={<Link href="/maintenance" />}>
+              <Button variant="outline" className="w-full" nativeButton={false} render={<Link href="/maintenance" />}>
                 View members list
                 <ArrowRight data-icon="inline-end" />
               </Button>

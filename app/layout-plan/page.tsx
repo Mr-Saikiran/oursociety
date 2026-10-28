@@ -41,7 +41,7 @@ export default function LayoutPlanPage() {
         title="Layout Plan"
         description={`${society.name} is located in ${society.location}, spanning ${society.roads.length} lanes and ${society.totalPlots} plots.`}
         action={
-          <Button render={<a href={directionsUrl} target="_blank" rel="noopener noreferrer" />}>
+          <Button nativeButton={false} render={<a href={directionsUrl} target="_blank" rel="noopener noreferrer" />}>
             <Navigation data-icon="inline-start" />
             Get directions
           </Button>

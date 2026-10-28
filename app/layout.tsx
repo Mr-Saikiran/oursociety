@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Manrope, Source_Serif_4 } from 'next/font/google'
+import { Manrope } from 'next/font/google'
+import { ThemeProvider } from 'next-themes'
 import { Toaster } from '@/components/ui/sonner'
 import { AppShell } from '@/components/app-shell'
 import './globals.css'
@@ -8,12 +9,6 @@ import './globals.css'
 const manrope = Manrope({
   subsets: ['latin'],
   variable: '--font-manrope',
-  display: 'swap',
-})
-
-const sourceSerif = Source_Serif_4({
-  subsets: ['latin'],
-  variable: '--font-source-serif',
   display: 'swap',
 })
 
@@ -35,8 +30,11 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light',
-  themeColor: '#1f5c4d',
+  colorScheme: 'light dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f7f6f0' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f1c1c' },
+  ],
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -48,12 +46,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="light bg-background">
+    <html lang="en" className="bg-background" suppressHydrationWarning>
       <body
-        className={`${manrope.variable} ${sourceSerif.variable} font-sans antialiased`}
+        className={`${manrope.variable} font-sans antialiased`}
       >
-        <AppShell>{children}</AppShell>
-        <Toaster position="top-center" />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <AppShell>{children}</AppShell>
+          <Toaster position="top-center" />
+        </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
