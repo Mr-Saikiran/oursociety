@@ -18,3 +18,14 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Android signing secrets and build outputs
+android/*.keystore
+android/signing.properties
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+*.aab
+*.idsig
