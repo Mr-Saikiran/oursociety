@@ -19,8 +19,8 @@ import { Button } from '@/components/ui/button'
 import { amenities, type Amenity } from '@/lib/data'
 
 export const metadata: Metadata = {
-  title: 'Amenities — Reddy\'s Avenue',
-  description: 'Community hall, parks, sports courts, temple and security facilities.',
+  title: 'Amenities',
+  description: 'Community hall, parks, sports courts and security facilities.',
 }
 
 const categoryIcon: Record<string, typeof Trees> = {
@@ -76,7 +76,7 @@ export default async function AmenitiesPage() {
     <div className="mx-auto max-w-6xl">
       <PageHeader
         title="Amenities"
-        description="Facilities maintained by the association for residents — community hall, parks, sports areas, temple and 24x7 security."
+        description="Facilities maintained by the association for residents — community hall, parks, sports areas and 24x7 security."
       />
       <div className="mb-5 flex flex-wrap gap-2">
         {categories.map((c) => (

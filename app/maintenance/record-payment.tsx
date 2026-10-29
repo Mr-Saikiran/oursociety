@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useAction } from '@/components/use-action'
 import { recordPayment } from '@/app/actions/data'
-import { rupee, type MaintenanceRecord } from '@/lib/data'
+import { money, type MaintenanceRecord } from '@/lib/data'
 import type { LedgerEntry } from '@/lib/data-extra'
+import { society } from '@/society/config'
 
 const modes: LedgerEntry['mode'][] = ['UPI', 'Bank transfer', 'Cash', 'Cheque']
 
@@ -30,7 +31,7 @@ export function RecordPayment({ record }: { record: MaintenanceRecord }) {
         <DialogHeader>
           <DialogTitle>Record payment</DialogTitle>
           <DialogDescription>
-            {record.owner} · Plot {record.plotNo}, Road {record.road} · {rupee(record.dueAmount)} due
+            {record.owner} · {society.terms.unit} {record.plotNo}, {society.terms.block} {record.road} · {money(record.dueAmount)} due
           </DialogDescription>
         </DialogHeader>
         <form

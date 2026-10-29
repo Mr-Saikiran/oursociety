@@ -13,8 +13,9 @@ import { ReadOnlyNote } from '@/components/read-only-note'
 import { useAction } from '@/components/use-action'
 import { createPoll, vote } from '@/app/actions/data'
 import type { PublicPoll } from '@/lib/repo'
+import { society } from '@/society/config'
 
-const fmt = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+const fmt = (d: string) => new Date(d).toLocaleDateString(society.locale, { day: 'numeric', month: 'short', year: 'numeric' })
 
 function PollCard({ poll, today, canEdit }: { poll: PublicPoll; today: string; canEdit: boolean }) {
   const [choice, setChoice] = useState<string | null>(null)

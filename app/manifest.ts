@@ -1,11 +1,11 @@
 import type { MetadataRoute } from 'next'
+import { society } from '@/society/config'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "OurSociety — Reddy's Avenue",
-    short_name: 'OurSociety',
-    description:
-      "OurSociety: community app for Reddy's Avenue Owners Welfare Association (RAOWA), Nizampet.",
+    name: `${society.appName} — ${society.shortName}`,
+    short_name: society.appName,
+    description: `${society.appName}: community app for ${society.name} (${society.acronym}), ${society.location}.`,
     start_url: '/',
     display: 'standalone',
     background_color: '#f7f6f0',

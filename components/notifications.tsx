@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/s
 import { cn } from '@/lib/utils'
 import { meetings } from '@/lib/data'
 import type { LiveData } from '@/lib/live'
+import { society } from '@/society/config'
 
 type Item = { id: string; date: string; title: string; body: string; href: string; icon: LucideIcon }
 
@@ -26,7 +27,7 @@ const buildItems = ({ notices, requests }: LiveData): Item[] => [
     .map((m) => ({ id: `m-${m.id}`, date: m.date, title: `Upcoming: ${m.title}`, body: `${m.time} · ${m.venue}`, href: '/meetings', icon: CalendarClock })),
 ].sort((a, b) => b.date.localeCompare(a.date))
 
-const fmt = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+const fmt = (d: string) => new Date(d).toLocaleDateString(society.locale, { day: 'numeric', month: 'short' })
 
 function readSeen(): Set<string> {
   try {

@@ -15,6 +15,7 @@ import { createVisitor, setVisitorStatus } from '@/app/actions/data'
 import { useAction } from '@/components/use-action'
 import { useCanEdit } from '@/components/session-provider'
 import { ReadOnlyNote } from '@/components/read-only-note'
+import { society } from '@/society/config'
 
 const statusLabel: Record<Visitor['status'], string> = {
   pending: 'Awaiting approval',
@@ -46,7 +47,7 @@ function PreApprove() {
           name: String(f.get('name')),
           phone: String(f.get('phone')),
           purpose,
-          visiting: `Plot ${String(f.get('plot')).trim()}, ${String(f.get('road')).trim()}`,
+          visiting: `${society.terms.unit} ${String(f.get('plot')).trim()}, ${String(f.get('road')).trim()}`,
           resident: String(f.get('resident')),
           expectedAt: String(f.get('when')).replace('T', ' '),
         }),
@@ -78,8 +79,8 @@ function PreApprove() {
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <div className="flex flex-col gap-1.5"><Label htmlFor="plot">Plot</Label><Input id="plot" name="plot" required /></div>
-            <div className="flex flex-col gap-1.5"><Label htmlFor="road">Road</Label><Input id="road" name="road" required /></div>
+            <div className="flex flex-col gap-1.5"><Label htmlFor="plot">{society.terms.unit}</Label><Input id="plot" name="plot" required /></div>
+            <div className="flex flex-col gap-1.5"><Label htmlFor="road">{society.terms.block}</Label><Input id="road" name="road" required /></div>
             <div className="flex flex-col gap-1.5"><Label htmlFor="resident">Resident</Label><Input id="resident" name="resident" /></div>
           </div>
           <div className="flex flex-col gap-1.5"><Label htmlFor="when">Expected at</Label><Input id="when" name="when" type="datetime-local" required /></div>

@@ -16,8 +16,9 @@ import { createNotice, deleteNotice } from '@/app/actions/data'
 import { useAction } from '@/components/use-action'
 import { useCanEdit } from '@/components/session-provider'
 import { ReadOnlyNote } from '@/components/read-only-note'
+import { society } from '@/society/config'
 
-const fmt = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+const fmt = (d: string) => new Date(d).toLocaleDateString(society.locale, { day: 'numeric', month: 'short', year: 'numeric' })
 const categories: Notice['category'][] = ['General', 'Maintenance', 'Event', 'Security', 'Urgent']
 
 function NewNotice() {
@@ -79,7 +80,7 @@ function NewNotice() {
             </div>
           </div>
           {audience === 'unit' && (
-            <div className="flex flex-col gap-1.5"><Label htmlFor="roads">Roads</Label><Input id="roads" name="roads" required placeholder="e.g. 4B, 4C" /></div>
+            <div className="flex flex-col gap-1.5"><Label htmlFor="roads">{society.terms.block}s</Label><Input id="roads" name="roads" required placeholder="e.g. 4B, 4C" /></div>
           )}
           <div className="flex flex-col gap-1.5"><Label htmlFor="files">Attachments</Label><Input id="files" name="files" type="file" multiple /></div>
           <DialogFooter><Button type="submit" disabled={pending}>Publish</Button></DialogFooter>

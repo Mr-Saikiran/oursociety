@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { rupee, society, type MaintenanceRecord } from '@/lib/data'
+import { money, society, type MaintenanceRecord } from '@/lib/data'
 import type { BillRun } from '@/lib/repo'
 import { recordBillRun } from '@/app/actions/data'
 import { useAction } from '@/components/use-action'
@@ -98,7 +98,7 @@ export function BillsView({ records, runs }: { records: MaintenanceRecord[]; run
         <>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
-              {bills.length} bills for <span className="font-medium text-foreground">{f.period}</span> · total {rupee(totalBilled)}
+              {bills.length} bills for <span className="font-medium text-foreground">{f.period}</span> · total {money(totalBilled)}
             </p>
             <Button variant="outline" onClick={sendAll} disabled={!canEdit || pending || sent.size === bills.length}>
               {channel === 'email' ? <Mail data-icon="inline-start" /> : channel === 'sms' ? <MessageSquare data-icon="inline-start" /> : <Send data-icon="inline-start" />}
@@ -112,7 +112,7 @@ export function BillsView({ records, runs }: { records: MaintenanceRecord[]; run
                   <TableRow>
                     <TableHead>Bill no.</TableHead>
                     <TableHead>Owner</TableHead>
-                    <TableHead className="hidden sm:table-cell">Plot</TableHead>
+                    <TableHead className="hidden sm:table-cell">{society.terms.unit}</TableHead>
                     <TableHead className="text-right">Current</TableHead>
                     <TableHead className="hidden text-right sm:table-cell">Arrears</TableHead>
                     <TableHead className="text-right">Total</TableHead>
@@ -125,9 +125,9 @@ export function BillsView({ records, runs }: { records: MaintenanceRecord[]; run
                       <TableCell className="text-xs text-muted-foreground">{b.billNo}</TableCell>
                       <TableCell className="font-medium">{b.owner}</TableCell>
                       <TableCell className="hidden sm:table-cell">{b.plotNo}, {b.road}</TableCell>
-                      <TableCell className="text-right">{rupee(b.current)}</TableCell>
-                      <TableCell className="hidden text-right sm:table-cell">{b.arrears ? rupee(b.arrears) : '—'}</TableCell>
-                      <TableCell className="text-right font-medium">{rupee(b.total)}</TableCell>
+                      <TableCell className="text-right">{money(b.current)}</TableCell>
+                      <TableCell className="hidden text-right sm:table-cell">{b.arrears ? money(b.arrears) : '—'}</TableCell>
+                      <TableCell className="text-right font-medium">{money(b.total)}</TableCell>
                       <TableCell>
                         <Badge variant={sent.has(b.billNo) ? 'default' : 'outline'}>{sent.has(b.billNo) ? 'Sent' : 'Draft'}</Badge>
                       </TableCell>
@@ -159,11 +159,11 @@ export function BillsView({ records, runs }: { records: MaintenanceRecord[]; run
                     <TableRow key={r.id}>
                       <TableCell>
                         <p className="font-medium">{r.period}</p>
-                        <p className="text-xs text-muted-foreground">{new Date(r.sentAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(r.sentAt).toLocaleString(society.locale, { dateStyle: 'medium', timeStyle: 'short' })}</p>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">{r.channel}</TableCell>
                       <TableCell className="text-right">{r.count}</TableCell>
-                      <TableCell className="text-right font-medium">{rupee(r.total)}</TableCell>
+                      <TableCell className="text-right font-medium">{money(r.total)}</TableCell>
                       <TableCell className="hidden text-muted-foreground sm:table-cell">{r.sentBy}</TableCell>
                     </TableRow>
                   ))}

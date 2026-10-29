@@ -3,12 +3,13 @@ import { PageHeader } from "@/components/page-header"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { rentals, rupee } from "@/lib/data"
+import { rentals, money } from "@/lib/data"
 import { BedDouble, Maximize, MapPin, Phone, CalendarDays } from "lucide-react"
+import { society } from '@/society/config'
 
 export const metadata: Metadata = {
   title: "Properties for Rent",
-  description: "Independent houses and villas available for rent inside Reddy's Avenue.",
+  description: `Homes available for rent inside ${society.shortName}.`,
 }
 
 const furnishingVariant: Record<string, "default" | "secondary" | "outline"> = {
@@ -46,7 +47,7 @@ export default function RentalsPage() {
                   </span>
                   <span className="flex items-center gap-1 text-sm text-muted-foreground">
                     <MapPin className="size-3.5" aria-hidden />
-                    Plot {r.plotNo}, Road {r.road}
+                    {society.terms.unit} {r.plotNo}, {society.terms.block} {r.road}
                   </span>
                 </div>
                 <Badge variant={r.status === "available" ? "default" : "outline"}>
@@ -57,7 +58,7 @@ export default function RentalsPage() {
 
             <CardContent className="flex flex-1 flex-col gap-4">
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-semibold text-foreground">{rupee(r.rent)}</span>
+                <span className="text-2xl font-semibold text-foreground">{money(r.rent)}</span>
                 <span className="text-sm text-muted-foreground">/ month</span>
               </div>
 
@@ -72,7 +73,7 @@ export default function RentalsPage() {
                 </span>
                 <span className="col-span-2 flex items-center gap-1.5 text-muted-foreground">
                   <CalendarDays className="size-4" aria-hidden />
-                  Available from {new Date(r.available).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                  Available from {new Date(r.available).toLocaleDateString(society.locale, { day: "numeric", month: "short", year: "numeric" })}
                 </span>
               </div>
 
@@ -80,7 +81,7 @@ export default function RentalsPage() {
                 <Badge variant={furnishingVariant[r.furnishing]} className="font-normal">
                   {r.furnishing}
                 </Badge>
-                <span className="text-sm text-muted-foreground">Deposit {rupee(r.deposit)}</span>
+                <span className="text-sm text-muted-foreground">Deposit {money(r.deposit)}</span>
               </div>
 
               <div className="flex flex-wrap gap-1.5">

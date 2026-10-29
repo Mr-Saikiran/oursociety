@@ -6,6 +6,7 @@ import { mutate, newId } from '@/lib/db'
 import { collections, type Booking, type BillRun, type Item } from '@/lib/repo'
 import { requestCategories, type RequestCategory, type ServiceRequest } from '@/lib/data'
 import type { LedgerEntry, Notice, Visitor } from '@/lib/data-extra'
+import { society } from '@/society/config'
 
 export type ActionResult = { ok?: string; error?: string }
 
@@ -52,7 +53,7 @@ export async function createRequest(input: NewRequest) {
     const max = Math.max(0, ...items.map((r) => Number(r.ticketNo.split('-').pop()) || 0))
     const req: ServiceRequest = {
       id: newId('req'),
-      ticketNo: `RA-${year}-${String(max + 1).padStart(4, '0')}`,
+      ticketNo: `${society.ticketPrefix}-${year}-${String(max + 1).padStart(4, '0')}`,
       category: input.category as RequestCategory,
       title,
       description: clean(input.description, 2000),
@@ -126,7 +127,7 @@ export async function createNotice(input: Pick<Notice, 'title' | 'body' | 'audie
       body: clean(input.body, 4000),
       date: today(),
       audience: input.audience === 'unit' ? 'unit' : 'all',
-      audienceLabel: input.audience === 'unit' ? `Road ${roads}` : 'All members',
+      audienceLabel: input.audience === 'unit' ? `${society.terms.block} ${roads}` : 'All members',
       category: input.category,
       attachments: (input.attachments ?? []).map((a) => clean(a, 120)).slice(0, 10),
     }
@@ -243,7 +244,7 @@ export async function recordPayment(plotNo: string, amount: number, mode: Ledger
   let owner = ''
   const res = await change('maintenance', ['/maintenance', '/'], (items) => {
     const r = items.find((x) => x.plotNo === plotNo)
-    if (!r) return { error: 'Plot not found.' }
+    if (!r) return { error: `${society.terms.unit} not found.` }
     if (amt > r.dueAmount) return { error: `Amount is more than the ${r.dueAmount} due.` }
     r.dueAmount -= amt
     r.paidAmount += amt

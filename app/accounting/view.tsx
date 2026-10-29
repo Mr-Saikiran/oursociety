@@ -12,14 +12,15 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { rupee } from '@/lib/data'
+import { money } from '@/lib/data'
 import { useCanEdit } from '@/components/session-provider'
 import { ReadOnlyNote } from '@/components/read-only-note'
 import type { LedgerEntry } from '@/lib/data-extra'
 import { createLedgerEntry, deleteLedgerEntry } from '@/app/actions/data'
 import { useAction } from '@/components/use-action'
+import { society } from '@/society/config'
 
-const fmt = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+const fmt = (d: string) => new Date(d).toLocaleDateString(society.locale, { day: 'numeric', month: 'short' })
 
 function AddEntry() {
   const [open, setOpen] = useState(false)
@@ -118,15 +119,15 @@ export function AccountingView({ entries }: { entries: LedgerEntry[] }) {
       <div className="grid gap-3 sm:grid-cols-3">
         <Card><CardContent className="flex items-center gap-3 p-4">
           <ArrowDownLeft className="size-5 text-primary" aria-hidden />
-          <div><p className="text-xl font-semibold">{rupee(income)}</p><p className="text-sm text-muted-foreground">Total income</p></div>
+          <div><p className="text-xl font-semibold">{money(income)}</p><p className="text-sm text-muted-foreground">Total income</p></div>
         </CardContent></Card>
         <Card><CardContent className="flex items-center gap-3 p-4">
           <ArrowUpRight className="size-5 text-destructive" aria-hidden />
-          <div><p className="text-xl font-semibold">{rupee(expense)}</p><p className="text-sm text-muted-foreground">Total expenses</p></div>
+          <div><p className="text-xl font-semibold">{money(expense)}</p><p className="text-sm text-muted-foreground">Total expenses</p></div>
         </CardContent></Card>
         <Card><CardContent className="flex items-center gap-3 p-4">
           <Scale className="size-5 text-muted-foreground" aria-hidden />
-          <div><p className="text-xl font-semibold">{rupee(income - expense)}</p><p className="text-sm text-muted-foreground">Net surplus</p></div>
+          <div><p className="text-xl font-semibold">{money(income - expense)}</p><p className="text-sm text-muted-foreground">Net surplus</p></div>
         </CardContent></Card>
       </div>
 
@@ -135,7 +136,7 @@ export function AccountingView({ entries }: { entries: LedgerEntry[] }) {
           <p className="font-medium">Expenses by category</p>
           {byCategory.map(([cat, amt]) => (
             <div key={cat} className="flex flex-col gap-1">
-              <div className="flex justify-between text-sm"><span>{cat}</span><span className="text-muted-foreground">{rupee(amt)}</span></div>
+              <div className="flex justify-between text-sm"><span>{cat}</span><span className="text-muted-foreground">{money(amt)}</span></div>
               <div className="h-2 rounded-full bg-muted"><div className="h-2 rounded-full bg-primary" style={{ width: `${(amt / byCategory[0][1]) * 100}%` }} /></div>
             </div>
           ))}
@@ -174,7 +175,7 @@ export function AccountingView({ entries }: { entries: LedgerEntry[] }) {
                   <TableCell className="hidden sm:table-cell"><Badge variant="secondary">{e.category}</Badge></TableCell>
                   <TableCell className="hidden sm:table-cell text-muted-foreground">{e.mode}</TableCell>
                   <TableCell className={`text-right font-medium ${e.type === 'income' ? 'text-primary' : ''}`}>
-                    {e.type === 'income' ? '+' : '−'}{rupee(e.amount)}
+                    {e.type === 'income' ? '+' : '−'}{money(e.amount)}
                   </TableCell>
                   {canEdit && (
                     <TableCell>

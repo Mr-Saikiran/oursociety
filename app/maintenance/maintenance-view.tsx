@@ -17,9 +17,10 @@ import {
 } from '@/components/ui/table'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
-import { maintenanceSummary, rupee, rupeeLakh, type MaintenanceRecord } from '@/lib/data'
+import { maintenanceSummary, money, moneyShort, type MaintenanceRecord } from '@/lib/data'
 import { useCanEdit } from '@/components/session-provider'
 import { RecordPayment } from './record-payment'
+import { society } from '@/society/config'
 
 const statusMeta = {
   paid: { label: 'Paid', variant: 'secondary' as const, icon: CheckCircle2, className: 'text-primary' },
@@ -49,10 +50,10 @@ export function MaintenanceView({ records }: { records: MaintenanceRecord[] }) {
   }, [q, filter])
 
   const summaryCards = [
-    { label: 'Collected 2025–26', value: rupeeLakh(maintenanceSummary.collected), sub: `${maintenanceSummary.paidPlots} paid + ${maintenanceSummary.partialPlots} partial`, tone: 'text-primary' },
-    { label: 'Outstanding dues', value: rupeeLakh(maintenanceSummary.outstanding), sub: `${maintenanceSummary.duePlots} plots pending`, tone: 'text-destructive' },
-    { label: 'Rate per plot', value: rupee(maintenanceSummary.ratePerPlot), sub: 'Annual, per AGM 2025', tone: '' },
-    { label: 'Total plots', value: String(maintenanceSummary.totalPlots), sub: 'Across 22 lanes', tone: '' },
+    { label: `Collected ${society.maintenanceYear}`, value: moneyShort(maintenanceSummary.collected), sub: `${maintenanceSummary.paidPlots} paid + ${maintenanceSummary.partialPlots} partial`, tone: 'text-primary' },
+    { label: 'Outstanding dues', value: moneyShort(maintenanceSummary.outstanding), sub: `${maintenanceSummary.duePlots} ${society.terms.units} pending`, tone: 'text-destructive' },
+    { label: `Rate per ${society.terms.unit.toLowerCase()}`, value: money(maintenanceSummary.ratePerPlot), sub: `Annual, per ${society.maintenanceApprovedAt}`, tone: '' },
+    { label: `Total ${society.terms.units}`, value: String(maintenanceSummary.totalPlots), sub: `Across ${society.roads.length} ${society.terms.blocks}`, tone: '' },
   ]
 
   return (
@@ -75,7 +76,7 @@ export function MaintenanceView({ records }: { records: MaintenanceRecord[] }) {
             <Search />
           </InputGroupAddon>
           <InputGroupInput
-            placeholder="Search owner, plot or lane…"
+            placeholder={`Search owner, ${society.terms.unit.toLowerCase()} or ${society.terms.block.toLowerCase()}…`}
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
@@ -107,8 +108,8 @@ export function MaintenanceView({ records }: { records: MaintenanceRecord[] }) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Owner</TableHead>
-                  <TableHead>Plot</TableHead>
-                  <TableHead>Lane</TableHead>
+                  <TableHead>{society.terms.unit}</TableHead>
+                  <TableHead>{society.terms.block}</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Paid</TableHead>
                   <TableHead className="text-right">Due</TableHead>
@@ -139,14 +140,14 @@ export function MaintenanceView({ records }: { records: MaintenanceRecord[] }) {
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{r.owner}</p>
-                      <p className="text-xs text-muted-foreground">Plot {r.plotNo} · Road {r.road}</p>
+                      <p className="text-xs text-muted-foreground">{society.terms.unit} {r.plotNo} · {society.terms.block} {r.road}</p>
                     </div>
                     <div className="shrink-0 text-right">
                       <Badge variant={meta.variant} className={`gap-1 ${meta.className}`}>
                         <Icon className="size-3" />{meta.label}
                       </Badge>
                       {r.dueAmount > 0 && (
-                        <p className="mt-1 text-xs font-medium text-destructive">{rupee(r.dueAmount)} due</p>
+                        <p className="mt-1 text-xs font-medium text-destructive">{money(r.dueAmount)} due</p>
                       )}
                     </div>
                   </CardContent>
@@ -158,7 +159,7 @@ export function MaintenanceView({ records }: { records: MaintenanceRecord[] }) {
         </>
       )}
       <p className="text-center text-xs text-muted-foreground">
-        Showing {rows.length} of {records.length} records. Full ledger of {maintenanceSummary.totalPlots} plots is maintained by the Treasurer.
+        Showing {rows.length} of {records.length} records. Full ledger of {maintenanceSummary.totalPlots} {society.terms.units} is maintained by the Treasurer.
       </p>
     </div>
   )
@@ -186,12 +187,12 @@ function MemberRow({ r, canEdit }: { r: MaintenanceRecord; canEdit: boolean }) {
           <Icon className="size-3" />{meta.label}
         </Badge>
       </TableCell>
-      <TableCell className="text-right tabular-nums">{r.paidAmount ? rupee(r.paidAmount) : '—'}</TableCell>
+      <TableCell className="text-right tabular-nums">{r.paidAmount ? money(r.paidAmount) : '—'}</TableCell>
       <TableCell className="text-right tabular-nums">
-        {r.dueAmount ? <span className="font-medium text-destructive">{rupee(r.dueAmount)}</span> : '—'}
+        {r.dueAmount ? <span className="font-medium text-destructive">{money(r.dueAmount)}</span> : '—'}
       </TableCell>
       <TableCell className="text-muted-foreground">
-        {r.lastPaid ? new Date(r.lastPaid).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' }) : '—'}
+        {r.lastPaid ? new Date(r.lastPaid).toLocaleDateString(society.locale, { day: 'numeric', month: 'short', year: '2-digit' }) : '—'}
       </TableCell>
       {canEdit && <TableCell className="text-right">{r.dueAmount > 0 && <RecordPayment record={r} />}</TableCell>}
     </TableRow>

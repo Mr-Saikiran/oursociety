@@ -7,39 +7,22 @@ import { Button } from '@/components/ui/button'
 import { society } from '@/lib/data'
 
 export const metadata: Metadata = {
-  title: 'Layout Plan — Reddy\'s Avenue',
-  description: 'Society location map and lane-wise layout of Reddy\'s Avenue, Nizampet.',
+  title: 'Layout Plan',
+  description: `Location map and ${society.terms.block.toLowerCase()}-wise layout of ${society.shortName}.`,
 }
 
 // Keyless Google Maps embed centered on the society location.
 const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(society.mapQuery)}&z=16&output=embed`
 const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(society.mapQuery)}`
 
-// Lanes grouped by block for a quick visual layout overview.
-const blocks = [
-  { block: 'Block 1', lanes: ['1A', '1B', '1C', '1D', '1E'] },
-  { block: 'Block 2', lanes: ['2A', '2B', '2C', '2D'] },
-  { block: 'Block 3', lanes: ['3A', '3B', '3C'] },
-  { block: 'Block 4', lanes: ['4A', '4B', '4C', '4D', '4E'] },
-  { block: 'Block 5', lanes: ['5A', '5B', '5C', '5D', '5E'] },
-]
-
-const landmarks: Record<string, string> = {
-  '2B': 'Temple',
-  '5C': 'Community Hall & Box Cricket',
-  '5B': 'Play Area',
-  '1C': 'Park',
-  '4E': 'Fruit Garden',
-}
-
-const gates = ['East Gate (arch)', 'West Gate (arch)', 'Main Entrance (BL to 1B)']
+const { layout, landmarks, gates, terms } = society
 
 export default function LayoutPlanPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
         title="Layout Plan"
-        description={`${society.name} is located in ${society.location}, spanning ${society.roads.length} lanes and ${society.totalPlots} plots.`}
+        description={`${society.name} is located in ${society.location}, spanning ${society.roads.length} ${terms.blocks} and ${society.totalPlots} ${terms.units}.`}
         action={
           <Button nativeButton={false} render={<a href={directionsUrl} target="_blank" rel="noopener noreferrer" />}>
             <Navigation data-icon="inline-start" />
@@ -52,7 +35,7 @@ export default function LayoutPlanPage() {
         <Card className="overflow-hidden p-0 lg:col-span-2">
           <div className="aspect-[16/11] w-full sm:aspect-[16/9]">
             <iframe
-              title="Reddy's Avenue location map"
+              title={`${society.shortName} location map`}
               src={mapSrc}
               className="size-full border-0"
               loading="lazy"
@@ -96,7 +79,7 @@ export default function LayoutPlanPage() {
               {Object.entries(landmarks).map(([road, name]) => (
                 <div key={road} className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2 text-sm">
                   <span>{name}</span>
-                  <Badge variant="outline">Road {road}</Badge>
+                  <Badge variant="outline">{terms.block} {road}</Badge>
                 </div>
               ))}
             </CardContent>
@@ -108,16 +91,16 @@ export default function LayoutPlanPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Route className="size-4 text-primary" />
-            <CardTitle>Lane layout</CardTitle>
+            <CardTitle>{terms.block} layout</CardTitle>
           </div>
-          <CardDescription>All {society.roads.length} lanes across 5 blocks. Highlighted lanes have common amenities.</CardDescription>
+          <CardDescription>All {society.roads.length} {terms.blocks} across {layout.length} groups. Highlighted ones have common amenities.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          {blocks.map((b) => (
-            <div key={b.block}>
-              <p className="mb-2 text-xs font-medium text-muted-foreground">{b.block}</p>
+          {layout.map((g) => (
+            <div key={g.group}>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">{g.group}</p>
               <div className="flex flex-wrap gap-2">
-                {b.lanes.map((lane) => {
+                {g.blocks.map((lane) => {
                   const hasLandmark = lane in landmarks
                   return (
                     <div

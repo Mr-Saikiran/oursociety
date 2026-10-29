@@ -14,9 +14,10 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { financialStatements, rupee, rupeeLakh, type FinancialStatement } from '@/lib/data'
+import { financialStatements, money, moneyShort, type FinancialStatement } from '@/lib/data'
 
-const categories = ['All', 'Annual Audit', 'Monthly', 'Festival', 'Temple'] as const
+// Tabs follow whatever statement categories the society's data uses.
+const categories = ['All', ...new Set(financialStatements.map((s) => s.category))]
 
 function StatementCard({ s, onOpen }: { s: FinancialStatement; onOpen: (s: FinancialStatement) => void }) {
   return (
@@ -39,15 +40,15 @@ function StatementCard({ s, onOpen }: { s: FinancialStatement; onOpen: (s: Finan
         <div className="grid grid-cols-3 gap-2">
           <div className="rounded-lg bg-secondary/50 p-2.5">
             <p className="flex items-center gap-1 text-xs text-muted-foreground"><TrendingUp className="size-3 text-primary" />Income</p>
-            <p className="mt-0.5 font-serif text-sm font-semibold">{rupeeLakh(s.income)}</p>
+            <p className="mt-0.5 font-serif text-sm font-semibold">{moneyShort(s.income)}</p>
           </div>
           <div className="rounded-lg bg-secondary/50 p-2.5">
             <p className="flex items-center gap-1 text-xs text-muted-foreground"><TrendingDown className="size-3 text-destructive" />Expense</p>
-            <p className="mt-0.5 font-serif text-sm font-semibold">{rupeeLakh(s.expense)}</p>
+            <p className="mt-0.5 font-serif text-sm font-semibold">{moneyShort(s.expense)}</p>
           </div>
           <div className="rounded-lg bg-secondary/50 p-2.5">
             <p className="flex items-center gap-1 text-xs text-muted-foreground"><Wallet className="size-3 text-primary" />Balance</p>
-            <p className="mt-0.5 font-serif text-sm font-semibold">{rupeeLakh(s.closingBalance)}</p>
+            <p className="mt-0.5 font-serif text-sm font-semibold">{moneyShort(s.closingBalance)}</p>
           </div>
         </div>
 
@@ -62,14 +63,14 @@ function StatementCard({ s, onOpen }: { s: FinancialStatement; onOpen: (s: Finan
 
 export function FinancesView() {
   const [active, setActive] = useState<FinancialStatement | null>(null)
-  const [cat, setCat] = useState<(typeof categories)[number]>('All')
+  const [cat, setCat] = useState('All')
 
   const filtered = cat === 'All' ? financialStatements : financialStatements.filter((s) => s.category === cat)
   const totalIncome = financialStatements.filter((s) => s.category !== 'Annual Audit').reduce((a, s) => a + s.income, 0)
 
   return (
     <>
-      <Tabs value={cat} onValueChange={(v) => setCat(v as typeof cat)}>
+      <Tabs value={cat} onValueChange={(v) => setCat(String(v))}>
         <TabsList className="flex-wrap">
           {categories.map((c) => (
             <TabsTrigger key={c} value={c}>{c}</TabsTrigger>
@@ -112,7 +113,7 @@ export function FinancesView() {
                 <div className="flex items-center justify-between rounded-xl bg-secondary/50 p-4">
                   <div>
                     <p className="text-xs text-muted-foreground">Closing balance</p>
-                    <p className="font-serif text-xl font-semibold">{rupee(active.closingBalance)}</p>
+                    <p className="font-serif text-xl font-semibold">{money(active.closingBalance)}</p>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => window.print()}>
                     <Download data-icon="inline-start" />
@@ -126,7 +127,7 @@ export function FinancesView() {
       </Dialog>
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
-        Festival & temple contributions collected to date: {rupee(totalIncome)}. Statements are prepared by the Treasurer and reviewed by the audit sub-committee.
+        Income across monthly, festival and fund statements to date: {money(totalIncome)}. Statements are prepared by the Treasurer and reviewed by the audit sub-committee.
       </p>
     </>
   )
@@ -153,7 +154,7 @@ function Row({
           type === 'income' ? 'text-primary' : type === 'expense' ? 'text-destructive' : 'text-muted-foreground'
         }`}
       >
-        {sign} {rupee(amount)}
+        {sign} {money(amount)}
       </span>
     </div>
   )

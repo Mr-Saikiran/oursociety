@@ -36,11 +36,12 @@ import { createRequest, updateRequest } from '@/app/actions/data'
 import { useAction } from '@/components/use-action'
 import { useCanEdit } from '@/components/session-provider'
 import { ReadOnlyNote } from '@/components/read-only-note'
+import { society } from '@/society/config'
 
 const icons: Record<string, LucideIcon> = { Trash2, Waves, Cctv, Zap, TrafficCone }
 
 const fmtDate = (d: string) =>
-  new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  new Date(d).toLocaleDateString(society.locale, { day: 'numeric', month: 'short', year: 'numeric' })
 
 const categoryLabel = (id: RequestCategory) => requestCategories.find((c) => c.id === id)?.label ?? id
 
@@ -134,7 +135,7 @@ function TicketCard({ req, canEdit }: { req: ServiceRequest; canEdit: boolean })
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <MapPin className="size-3.5" aria-hidden />
-            Plot {req.plotNo}, Road {req.road}
+            {society.terms.unit} {req.plotNo}, {society.terms.block} {req.road}
           </span>
           <span className="flex items-center gap-1.5">
             <UserRound className="size-3.5" aria-hidden />
@@ -261,11 +262,11 @@ function NewRequestDialog() {
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="plotNo">Plot no.</Label>
+              <Label htmlFor="plotNo">{society.terms.unit} no.</Label>
               <Input id="plotNo" name="plotNo" required />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="road">Road</Label>
+              <Label htmlFor="road">{society.terms.block}</Label>
               <Input id="road" name="road" required placeholder="e.g. 4B" />
             </div>
             <div className="flex flex-col gap-1.5">

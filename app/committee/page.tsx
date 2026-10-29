@@ -5,10 +5,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { executiveCommittee, advisoryCommittee, type CommitteeMember } from '@/lib/data'
+import { society } from '@/society/config'
 
 export const metadata: Metadata = {
-  title: 'Committee — Reddy\'s Avenue',
-  description: 'Executive and Advisory Committee members of RAOWA.',
+  title: 'Committee',
+  description: `Executive and Advisory Committee members of ${society.acronym}.`,
 }
 
 function initials(name: string) {
@@ -36,7 +37,7 @@ function MemberCard({ member, lead }: { member: CommitteeMember; lead?: boolean 
         <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
           {member.road && (
             <span className="flex items-center gap-2">
-              <MapPin className="size-3.5 shrink-0" /> Road {member.road}
+              <MapPin className="size-3.5 shrink-0" /> {society.terms.block} {member.road}
             </span>
           )}
           {member.phone && (
@@ -69,7 +70,7 @@ export default function CommitteePage() {
     <div className="mx-auto max-w-6xl">
       <PageHeader
         title="Committees"
-        description="The Executive Committee (EC) manages day-to-day governance and development, formed in July 2024. The Advisory Committee provides guidance on legal, infrastructure and temple matters."
+        description="The Executive Committee (EC) manages day-to-day governance and development. The Advisory Committee provides guidance on legal, infrastructure and community matters."
       />
 
       <section className="mb-10">

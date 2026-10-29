@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation'
 import { Menu, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { navGroups, navItems, mobilePrimaryHrefs } from '@/lib/nav'
-import { society } from '@/lib/data'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -16,6 +15,7 @@ import { Notifications } from '@/components/notifications'
 import { UserMenu } from '@/components/user-menu'
 import { useSession } from '@/components/session-provider'
 import type { LiveData } from '@/lib/live'
+import { society } from '@/society/config'
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
@@ -61,10 +61,10 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 function Brand({ compact }: { compact?: boolean }) {
   return (
     <div className="flex items-center gap-3">
-      <Image src="/raowa-logo.png" alt="" width={40} height={40} className="size-10 shrink-0 rounded-xl" priority />
+      <Image src={society.logo} alt="" width={40} height={40} className="size-10 shrink-0 rounded-xl" priority />
       {!compact && (
         <div className="min-w-0 leading-tight">
-          <p className="truncate text-base font-bold tracking-tight text-sidebar-foreground">OurSociety</p>
+          <p className="truncate text-base font-bold tracking-tight text-sidebar-foreground">{society.appName}</p>
           <p className="truncate text-xs text-sidebar-foreground/60">
             {society.shortName} · Reg {society.regNo}
           </p>
@@ -104,7 +104,7 @@ function SidebarFooter() {
 function currentTitle(pathname: string) {
   if (pathname === '/settings') return 'Settings'
   if (pathname === '/login') return 'Sign in'
-  return navItems.find((i) => i.href === pathname)?.label ?? 'OurSociety'
+  return navItems.find((i) => i.href === pathname)?.label ?? society.appName
 }
 
 export function AppShell({ children, live }: { children: React.ReactNode; live: LiveData }) {
@@ -147,8 +147,8 @@ export function AppShell({ children, live }: { children: React.ReactNode; live: 
           </div>
 
           <div className="flex min-w-0 items-center gap-2.5 lg:hidden">
-            <Image src="/raowa-logo.png" alt="" width={32} height={32} className="size-8 shrink-0 rounded-lg" />
-            <span className="truncate text-base font-bold tracking-tight">OurSociety</span>
+            <Image src={society.logo} alt="" width={32} height={32} className="size-8 shrink-0 rounded-lg" />
+            <span className="truncate text-base font-bold tracking-tight">{society.appName}</span>
           </div>
 
           <p className="hidden text-sm text-muted-foreground lg:block">

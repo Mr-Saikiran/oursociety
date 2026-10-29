@@ -10,6 +10,7 @@ import { navItems } from '@/lib/nav'
 import { advisoryCommittee, executiveCommittee, meetings } from '@/lib/data'
 import { contacts, documents } from '@/lib/data-extra'
 import type { LiveData } from '@/lib/live'
+import { society } from '@/society/config'
 
 type Result = { id: string; title: string; subtitle: string; href: string; kind: string }
 
@@ -27,7 +28,7 @@ const staticIndex: Result[] = [
 const buildIndex = ({ notices, requests, maintenance }: LiveData): Result[] => [
   ...staticIndex,
   ...maintenance.map((r) => ({
-    id: `mr-${r.plotNo}`, title: r.owner, subtitle: `Plot ${r.plotNo}, Road ${r.road} · ${r.status}`, href: '/maintenance', kind: 'Member',
+    id: `mr-${r.plotNo}`, title: r.owner, subtitle: `${society.terms.unit} ${r.plotNo}, ${society.terms.block} ${r.road} · ${r.status}`, href: '/maintenance', kind: 'Member',
   })),
   ...notices.map((n) => ({ id: `nt-${n.id}`, title: n.title, subtitle: n.audienceLabel, href: '/notices', kind: 'Notice' })),
   ...requests.map((r) => ({ id: `rq-${r.id}`, title: r.title, subtitle: `${r.ticketNo} · ${r.status}`, href: '/requests', kind: 'Request' })),
@@ -98,7 +99,7 @@ export function SearchDialog({ live }: { live: LiveData }) {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent showCloseButton={false} className="top-[15%] translate-y-0 gap-0 overflow-hidden p-0 sm:max-w-xl">
-          <DialogTitle className="sr-only">Search OurSociety</DialogTitle>
+          <DialogTitle className="sr-only">Search {society.appName}</DialogTitle>
           <div className="flex items-center gap-2 border-b px-4">
             <Search className="size-4 shrink-0 text-muted-foreground" />
             <input

@@ -7,6 +7,7 @@ import { AppShell } from '@/components/app-shell'
 import { SessionProvider } from '@/components/session-provider'
 import { getCurrentUser } from '@/lib/auth'
 import { all } from '@/lib/repo'
+import { society } from '@/society/config'
 import './globals.css'
 
 const manrope = Manrope({
@@ -17,18 +18,17 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: {
-    default: "OurSociety — Reddy's Avenue",
-    template: '%s · OurSociety',
+    default: `${society.appName} — ${society.shortName}`,
+    template: `%s · ${society.appName}`,
   },
-  applicationName: 'OurSociety',
-  description:
-    "OurSociety: community app for Reddy's Avenue Owners Welfare Association (RAOWA), Nizampet. Maintenance, finances, committees, meetings, amenities and resident requests.",
+  applicationName: society.appName,
+  description: `${society.appName}: community app for ${society.name} (${society.acronym}), ${society.location}. Maintenance, finances, committees, meetings, amenities and resident requests.`,
   generator: 'v0.app',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'OurSociety',
+    title: society.appName,
   },
 }
 

@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { documents, type SocietyDocument } from '@/lib/data-extra'
+import { society } from '@/society/config'
 
-const fmt = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+const fmt = (d: string) => new Date(d).toLocaleDateString(society.locale, { day: 'numeric', month: 'short', year: 'numeric' })
 const categories = ['All', 'Byelaws', 'Minutes', 'Financial', 'Legal', 'Forms', 'Certificates'] as const
 
 export function DocumentsView() {

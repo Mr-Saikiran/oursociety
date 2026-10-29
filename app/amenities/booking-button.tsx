@@ -13,6 +13,7 @@ import { useCanEdit, useSession } from '@/components/session-provider'
 import { useAction } from '@/components/use-action'
 import { cancelBooking, createBooking } from '@/app/actions/data'
 import type { Booking } from '@/lib/repo'
+import { society } from '@/society/config'
 
 const slots = ['6–9 AM', '9 AM–12 PM', '12–3 PM', '3–6 PM', '6–9 PM']
 
@@ -87,7 +88,7 @@ export function UpcomingBookings({ bookings }: { bookings: Booking[] }) {
               <div className="min-w-0 flex-1">
                 <p className="font-medium">{b.amenity}</p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(b.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })} · {b.slot} · {b.bookedBy}
+                  {new Date(b.date).toLocaleDateString(society.locale, { weekday: 'short', day: 'numeric', month: 'short' })} · {b.slot} · {b.bookedBy}
                 </p>
               </div>
               {user && (user.role === 'admin' || user.name === b.bookedBy) && (

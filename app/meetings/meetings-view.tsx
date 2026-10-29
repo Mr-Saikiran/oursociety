@@ -15,9 +15,10 @@ import {
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { meetings, type Meeting } from '@/lib/data'
+import { society } from '@/society/config'
 
 const fmtDate = (d: string) =>
-  new Date(d).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+  new Date(d).toLocaleDateString(society.locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
 
 function MeetingCard({ meeting, onOpen }: { meeting: Meeting; onOpen: (m: Meeting) => void }) {
   const hasMinutes = meeting.status === 'held' && meeting.minutes

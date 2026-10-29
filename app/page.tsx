@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import {
   society,
-  rupeeLakh,
+  moneyShort,
   maintenanceSummary,
   meetings,
   financialStatements,
@@ -36,21 +36,21 @@ export default async function DashboardPage() {
   const stats = [
     {
       label: 'Maintenance collected',
-      value: rupeeLakh(maintenanceSummary.collected),
-      hint: `${paidPct}% of ${society.totalPlots} plots paid`,
+      value: moneyShort(maintenanceSummary.collected),
+      hint: `${paidPct}% of ${society.totalPlots} ${society.terms.units} paid`,
       icon: ReceiptIndianRupee,
       href: '/maintenance',
     },
     {
       label: 'Outstanding dues',
-      value: rupeeLakh(maintenanceSummary.outstanding),
-      hint: `${maintenanceSummary.duePlots} plots pending`,
+      value: moneyShort(maintenanceSummary.outstanding),
+      hint: `${maintenanceSummary.duePlots} ${society.terms.units} pending`,
       icon: TrendingUp,
       href: '/maintenance',
     },
     {
       label: 'Funds in hand',
-      value: rupeeLakh(audit.closingBalance),
+      value: moneyShort(audit.closingBalance),
       hint: 'As per latest audit',
       icon: Landmark,
       href: '/finances',
@@ -68,7 +68,7 @@ export default async function DashboardPage() {
     <div className="mx-auto max-w-6xl">
       <PageHeader
         title={`Welcome to ${society.shortName}`}
-        description={`${society.name} (${society.acronym}) · Reg. No. ${society.regNo} · ${society.location}. Serving ${society.totalPlots} homes across ${society.roads.length} lanes.`}
+        description={`${society.name} (${society.acronym}) · Reg. No. ${society.regNo} · ${society.location}. Serving ${society.totalPlots} homes across ${society.roads.length} ${society.terms.blocks}.`}
       />
 
       {/* Stats */}
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
                 <div className="mb-1.5 flex items-center gap-2">
                   <Badge variant="secondary">{a.tag}</Badge>
                   <span className="text-xs text-muted-foreground">
-                    {new Date(a.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {new Date(a.date).toLocaleDateString(society.locale, { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                 </div>
                 <p className="font-medium">{a.title}</p>
@@ -124,14 +124,14 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Maintenance drive</CardTitle>
-              <CardDescription>2025–26 collection status</CardDescription>
+              <CardDescription>{society.maintenanceYear} collection status</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div>
                 <div className="mb-2 flex items-baseline justify-between">
                   <span className="font-serif text-2xl font-semibold">{paidPct}%</span>
                   <span className="text-xs text-muted-foreground">
-                    {maintenanceSummary.paidPlots}/{maintenanceSummary.totalPlots} plots
+                    {maintenanceSummary.paidPlots}/{maintenanceSummary.totalPlots} {society.terms.units}
                   </span>
                 </div>
                 <Progress value={paidPct} />
@@ -171,7 +171,7 @@ export default async function DashboardPage() {
                   <Badge variant="secondary">{upcoming[0].type}</Badge>
                   <p className="mt-2 font-medium leading-snug">{upcoming[0].title}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {new Date(upcoming[0].date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })} · {upcoming[0].time}
+                    {new Date(upcoming[0].date).toLocaleDateString(society.locale, { weekday: 'long', day: 'numeric', month: 'long' })} · {upcoming[0].time}
                   </p>
                   <p className="text-sm text-muted-foreground">{upcoming[0].venue}</p>
                 </Link>

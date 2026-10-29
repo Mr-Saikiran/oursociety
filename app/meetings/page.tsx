@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/page-header'
 import { MeetingsView } from './meetings-view'
 
 export const metadata: Metadata = {
-  title: 'Meetings — Reddy\'s Avenue',
+  title: 'Meetings',
   description: 'Held and upcoming meetings with minutes of meeting (MOM).',
 }
 
@@ -12,7 +12,7 @@ export default function MeetingsPage() {
     <div className="mx-auto max-w-5xl">
       <PageHeader
         title="Meetings"
-        description="Annual general body meetings, EC monthly meetings and Temple Trust reviews. Open any held meeting to read the full minutes (MOM)."
+        description="Annual general body meetings, EC monthly meetings and special meetings. Open any held meeting to read the full minutes (MOM)."
       />
       <MeetingsView />
     </div>
