@@ -22,3 +22,9 @@ export const moneyShort = (n: number) => {
 /** Dates in the society's locale. */
 export const formatDate = (d: string | Date, opts: Intl.DateTimeFormatOptions) =>
   new Date(d).toLocaleDateString(society.locale, opts)
+
+/** Today's date (YYYY-MM-DD) in the society's time zone. */
+export const todayISO = () => new Intl.DateTimeFormat('en-CA', { timeZone: society.timeZone }).format(new Date())
+
+/** A meeting is upcoming until its date has passed, whatever its stored status says. */
+export const isUpcoming = (m: { date: string }) => m.date.slice(0, 10) >= todayISO()

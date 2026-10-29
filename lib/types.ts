@@ -8,7 +8,7 @@ export type CommitteeMember = {
   road?: string
   phone?: string
   email?: string
-  since: string
+  since?: string
   responsibilities: string[]
 }
 
@@ -137,6 +137,8 @@ export type SocietyDocument = {
   date: string
   size: string
   type: 'PDF' | 'DOCX' | 'XLSX'
+  /** Path to the file in /public, when the file is available to download. */
+  url?: string
 }
 
 export type Contact = {

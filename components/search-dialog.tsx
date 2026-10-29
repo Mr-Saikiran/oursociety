@@ -7,26 +7,26 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { navItems } from '@/lib/nav'
-import { advisoryCommittee, executiveCommittee, meetings } from '@/lib/data'
+import { advisoryCommittee, executiveCommittee, workingCommittee } from '@/lib/data'
 import { contacts, documents } from '@/lib/data-extra'
 import type { LiveData } from '@/lib/live'
 import { society } from '@/society/config'
 
 type Result = { id: string; title: string; subtitle: string; href: string; kind: string }
 
-// Static part of the index: pages, committee, meetings, documents, contacts.
+// Static part of the index: pages, committee, documents, contacts.
 const staticIndex: Result[] = [
   ...navItems.map((n) => ({ id: `nav-${n.href}`, title: n.label, subtitle: n.description, href: n.href, kind: 'Page' })),
-  ...[...executiveCommittee, ...advisoryCommittee].map((m) => ({
+  ...[...executiveCommittee, ...workingCommittee, ...advisoryCommittee].map((m) => ({
     id: `cm-${m.id}`, title: m.name, subtitle: m.role, href: '/committee', kind: 'Committee',
   })),
-  ...meetings.map((m) => ({ id: `mt-${m.id}`, title: m.title, subtitle: `${m.type} · ${m.date}`, href: '/meetings', kind: 'Meeting' })),
   ...documents.map((d) => ({ id: `dc-${d.id}`, title: d.name, subtitle: d.category, href: '/documents', kind: 'Document' })),
   ...contacts.map((c) => ({ id: `ct-${c.id}`, title: c.name, subtitle: `${c.role} · ${c.phone}`, href: '/contacts', kind: 'Contact' })),
 ]
 
-const buildIndex = ({ notices, requests, maintenance }: LiveData): Result[] => [
+const buildIndex = ({ notices, requests, maintenance, meetings }: LiveData): Result[] => [
   ...staticIndex,
+  ...meetings.map((m) => ({ id: `mt-${m.id}`, title: m.title, subtitle: `${m.type}, ${m.date}`, href: '/meetings', kind: 'Meeting' })),
   ...maintenance.map((r) => ({
     id: `mr-${r.plotNo}`, title: r.owner, subtitle: `${society.terms.unit} ${r.plotNo}, ${society.terms.block} ${r.road} · ${r.status}`, href: '/maintenance', kind: 'Member',
   })),

@@ -3,14 +3,15 @@
 import { revalidatePath } from 'next/cache'
 import { getCurrentUser } from '@/lib/auth'
 import { mutate, newId } from '@/lib/db'
-import { collections, type Booking, type BillRun, type Item } from '@/lib/repo'
-import { requestCategories, type RequestCategory, type ServiceRequest } from '@/lib/data'
+import { collections, type Activity, type Booking, type BillRun, type Item, type PushSub } from '@/lib/repo'
+import { requestCategories, todayISO, type Meeting, type RequestCategory, type ServiceRequest } from '@/lib/data'
+import { pushToAll } from '@/lib/push'
 import type { LedgerEntry, Notice, Visitor } from '@/lib/data-extra'
 import { society } from '@/society/config'
 
 export type ActionResult = { ok?: string; error?: string }
 
-const today = () => new Date().toISOString().slice(0, 10)
+const today = todayISO
 const clean = (v: unknown, max = 500) => String(v ?? '').trim().slice(0, max)
 
 async function editor() {
@@ -19,20 +20,71 @@ async function editor() {
   return user
 }
 
-/** Runs a signed-in mutation on a collection, revalidates the given pages, and maps errors to a result. */
+/** What a change tells residents: a title, and optionally its own body, link and bell id. */
+type Note = { title: string; body?: string; href?: string; ref?: string }
+
+type Outcome<K extends keyof typeof collections> = { items: Item<K>[]; ok: string; note?: Note | false } | { error: string }
+
+const modules: Partial<Record<keyof typeof collections, { label: string; href: string }>> = {
+  requests: { label: 'Member support', href: '/requests' },
+  visitors: { label: 'Visitors', href: '/visitors' },
+  notices: { label: 'Notices', href: '/notices' },
+  ledger: { label: 'Accounting', href: '/accounting' },
+  polls: { label: 'Polls', href: '/polls' },
+  bookings: { label: 'Amenities', href: '/amenities' },
+  maintenance: { label: 'Maintenance', href: '/maintenance' },
+  bills: { label: 'Bills', href: '/bills' },
+  meetings: { label: 'Meetings', href: '/meetings' },
+}
+
+/** Adds a change to the notifications feed and pushes it to every subscribed phone. Never fails the change. */
+async function announce(key: keyof typeof collections, note: Note, by: string) {
+  const m = modules[key]
+  if (!m) return
+  const entry: Activity = {
+    id: newId('act'),
+    at: new Date().toISOString(),
+    module: key,
+    title: note.title,
+    body: note.body ?? `${m.label}, by ${by}`,
+    href: note.href ?? m.href,
+    by,
+    ref: note.ref,
+  }
+  try {
+    const { name, seed } = collections.activity
+    await mutate<Activity>(name, seed as Activity[], (items) => ({ items: [entry, ...items].slice(0, 200) }))
+    revalidatePath('/', 'layout')
+    await pushToAll({ title: entry.title, body: entry.body, url: entry.href, tag: entry.id })
+  } catch (e) {
+    console.error('Notification failed', e)
+  }
+}
+
+/**
+ * Runs a signed-in mutation on a collection, revalidates the given pages, and maps errors to a result.
+ * Every successful change is announced in the notifications feed unless `notify` is false.
+ */
 async function change<K extends keyof typeof collections>(
   key: K,
   paths: string[],
-  fn: (items: Item<K>[], user: Awaited<ReturnType<typeof editor>>) => { items: Item<K>[]; ok: string } | { error: string },
+  fn: (items: Item<K>[], user: Awaited<ReturnType<typeof editor>>) => Outcome<K>,
+  { notify = true }: { notify?: boolean } = {},
 ): Promise<ActionResult> {
   try {
     const user = await editor()
     const { name, seed } = collections[key]
+    let note: Note | false | undefined
     const out = await mutate<Item<K>, ActionResult>(name, seed as Item<K>[], (items) => {
       const r = fn(items, user)
-      return 'error' in r ? { items, result: { error: r.error } } : { items: r.items, result: { ok: r.ok } }
+      if ('error' in r) return { items, result: { error: r.error } }
+      note = r.note
+      return { items: r.items, result: { ok: r.ok } }
     })
-    if (out?.ok) for (const p of paths) revalidatePath(p)
+    if (out?.ok) {
+      for (const p of paths) revalidatePath(p)
+      if (notify && note !== false) await announce(key, note ?? { title: out.ok }, user.name)
+    }
     return out ?? { error: 'Nothing changed.' }
   } catch (e) {
     return { error: (e as Error).message }
@@ -65,7 +117,11 @@ export async function createRequest(input: NewRequest) {
       priority: input.priority,
       updates: [{ on: today(), note: `Ticket raised by ${user.name}.` }],
     }
-    return { items: [req, ...items], ok: `Ticket ${req.ticketNo} raised` }
+    return {
+      items: [req, ...items],
+      ok: `Ticket ${req.ticketNo} raised`,
+      note: { title: `New request ${req.ticketNo}: ${req.title}`, body: `Raised by ${req.raisedBy}`, ref: `r-${req.id}-${today()}` },
+    }
   })
 }
 
@@ -78,7 +134,11 @@ export async function updateRequest(id: string, status: ServiceRequest['status']
     if (!text && status === req.status) return { error: 'Add a note or change the status.' }
     req.status = status
     req.updates.push({ on: today(), note: `${text || `Status changed to ${status}.`} — ${user.name}` })
-    return { items, ok: `${req.ticketNo} updated` }
+    return {
+      items,
+      ok: `${req.ticketNo} updated`,
+      note: { title: `${req.ticketNo} updated: ${req.title}`, body: req.updates[req.updates.length - 1].note, ref: `r-${req.id}-${today()}` },
+    }
   })
 }
 
@@ -131,7 +191,7 @@ export async function createNotice(input: Pick<Notice, 'title' | 'body' | 'audie
       category: input.category,
       attachments: (input.attachments ?? []).map((a) => clean(a, 120)).slice(0, 10),
     }
-    return { items: [n, ...items], ok: 'Notice published' }
+    return { items: [n, ...items], ok: 'Notice published', note: { title: n.title, body: `New notice for ${n.audienceLabel}`, ref: `n-${n.id}` } }
   })
 }
 
@@ -146,7 +206,7 @@ export async function deleteNotice(id: string) {
 
 const MODES: LedgerEntry['mode'][] = ['UPI', 'Bank transfer', 'Cash', 'Cheque']
 
-export async function createLedgerEntry(input: Omit<LedgerEntry, 'id' | 'date'>) {
+function addLedgerEntry(input: Omit<LedgerEntry, 'id' | 'date'>, notify: boolean) {
   return change('ledger', ['/accounting'], (items) => {
     const amount = Math.round(Number(input.amount))
     if (!(amount > 0)) return { error: 'Enter an amount above zero.' }
@@ -160,8 +220,12 @@ export async function createLedgerEntry(input: Omit<LedgerEntry, 'id' | 'date'>)
       amount,
       mode: input.mode,
     }
-    return { items: [e, ...items], ok: 'Entry added to ledger' }
-  })
+    return { items: [e, ...items], ok: 'Entry added to ledger', note: { title: `Ledger ${e.type}: ${e.description || e.category}` } }
+  }, { notify })
+}
+
+export async function createLedgerEntry(input: Omit<LedgerEntry, 'id' | 'date'>) {
+  return addLedgerEntry(input, true)
 }
 
 export async function deleteLedgerEntry(id: string) {
@@ -185,7 +249,7 @@ export async function vote(pollId: string, optionId: string) {
     poll.voters[user.id] = optionId
     option.votes += 1
     return { items, ok: 'Your vote has been recorded' }
-  })
+  }, { notify: false })
 }
 
 export async function createPoll(input: { question: string; description: string; closes: string; options: string[] }) {
@@ -208,6 +272,7 @@ export async function createPoll(input: { question: string; description: string;
         ...items,
       ],
       ok: 'Poll created',
+      note: { title: `New poll: ${question}`, body: `Vote before ${input.closes}` },
     }
   })
 }
@@ -255,13 +320,14 @@ export async function recordPayment(plotNo: string, amount: number, mode: Ledger
   })
   if (res.ok) {
     // Keep the books in step: every maintenance payment is also ledger income.
-    await createLedgerEntry({
+    // The maintenance change already notified residents, so the ledger entry stays quiet.
+    await addLedgerEntry({
       type: 'income',
       category: 'Maintenance',
       description: `Maintenance — plot ${plotNo} (${owner})`,
       amount: amt,
       mode,
-    })
+    }, false)
   }
   return res
 }
@@ -284,3 +350,66 @@ export async function recordBillRun(input: Omit<BillRun, 'id' | 'sentBy' | 'sent
   })
 }
 
+
+/* ------------------------------ Meetings ----------------------------- */
+
+const MEETING_TYPES: Meeting['type'][] = ['AGM', 'EC Meeting', 'Temple Trust', 'Special']
+
+export async function createMeeting(
+  input: Pick<Meeting, 'title' | 'type' | 'date' | 'time' | 'venue' | 'agenda'> & { notify: boolean },
+) {
+  return change('meetings', ['/meetings', '/'], (items) => {
+    const title = clean(input.title, 140)
+    if (!title) return { error: 'Enter a title.' }
+    if (!MEETING_TYPES.includes(input.type)) return { error: 'Choose a meeting type.' }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date) || input.date < today()) return { error: 'Choose a date from today onwards.' }
+    const time = clean(input.time, 40)
+    const venue = clean(input.venue, 120)
+    if (!time || !venue) return { error: 'Enter the time and venue.' }
+    const m: Meeting = {
+      id: newId('mtg'),
+      title,
+      type: input.type,
+      date: input.date,
+      time,
+      venue,
+      status: 'upcoming',
+      agenda: input.agenda.map((x) => clean(x, 200)).filter(Boolean).slice(0, 20),
+    }
+    const when = new Date(m.date).toLocaleDateString(society.locale, { weekday: 'short', day: 'numeric', month: 'short' })
+    return {
+      items: [m, ...items],
+      ok: input.notify ? 'Meeting scheduled and members notified' : 'Meeting scheduled',
+      note: input.notify ? { title: `New meeting: ${m.title}`, body: `${m.type} on ${when}, ${m.time}, ${m.venue}`, ref: `m-${m.id}` } : false,
+    }
+  })
+}
+
+export async function deleteMeeting(id: string) {
+  return change('meetings', ['/meetings', '/'], (items) => {
+    const m = items.find((x) => x.id === id)
+    if (!m) return { error: 'Meeting not found.' }
+    return { items: items.filter((x) => x.id !== id), ok: 'Meeting removed', note: { title: `Meeting cancelled: ${m.title}` } }
+  })
+}
+
+/* --------------------------- Push messages --------------------------- */
+
+/** Anyone may ask for alerts on their own device; no sign-in needed to read notices. */
+export async function subscribePush(sub: { endpoint: string; keys: { p256dh: string; auth: string } }): Promise<ActionResult> {
+  const endpoint = clean(sub?.endpoint, 1000)
+  const p256dh = clean(sub?.keys?.p256dh, 200)
+  const auth = clean(sub?.keys?.auth, 100)
+  if (!/^https:\/\//.test(endpoint) || !p256dh || !auth) return { error: 'This device could not be subscribed.' }
+  const { name, seed } = collections.pushSubs
+  await mutate<PushSub>(name, seed as PushSub[], (items) => ({
+    items: [{ endpoint, keys: { p256dh, auth }, createdAt: new Date().toISOString() }, ...items.filter((s) => s.endpoint !== endpoint)].slice(0, 5000),
+  }))
+  return { ok: 'Alerts are on for this device' }
+}
+
+export async function unsubscribePush(endpoint: string): Promise<ActionResult> {
+  const { name, seed } = collections.pushSubs
+  await mutate<PushSub>(name, seed as PushSub[], (items) => ({ items: items.filter((s) => s.endpoint !== endpoint) }))
+  return { ok: 'Alerts are off for this device' }
+}

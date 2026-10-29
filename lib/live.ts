@@ -1,5 +1,12 @@
-import type { MaintenanceRecord, ServiceRequest } from './data'
+import type { MaintenanceRecord, Meeting, ServiceRequest } from './data'
 import type { Notice } from './data-extra'
+import type { Activity } from './repo'
 
 /** Live collections the app shell needs for search and notifications. */
-export type LiveData = { notices: Notice[]; requests: ServiceRequest[]; maintenance: MaintenanceRecord[] }
+export type LiveData = {
+  notices: Notice[]
+  requests: ServiceRequest[]
+  maintenance: MaintenanceRecord[]
+  meetings: Meeting[]
+  activity: Activity[]
+}

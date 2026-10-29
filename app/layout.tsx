@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Manrope } from 'next/font/google'
+import { Nunito } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from '@/components/ui/sonner'
 import { AppShell } from '@/components/app-shell'
@@ -10,9 +10,9 @@ import { all } from '@/lib/repo'
 import { society } from '@/society/config'
 import './globals.css'
 
-const manrope = Manrope({
+const nunito = Nunito({
   subsets: ['latin'],
-  variable: '--font-manrope',
+  variable: '--font-nunito',
   display: 'swap',
 })
 
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f7f6f0' },
+    { media: '(prefers-color-scheme: light)', color: '#f8f4e8' },
     { media: '(prefers-color-scheme: dark)', color: '#0f1c1c' },
   ],
   width: 'device-width',
@@ -48,20 +48,22 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const [user, notices, requests, maintenance] = await Promise.all([
+  const [user, notices, requests, maintenance, meetings, activity] = await Promise.all([
     getCurrentUser(),
     all('notices'),
     all('requests'),
     all('maintenance'),
+    all('meetings'),
+    all('activity'),
   ])
   return (
     <html lang="en" className="bg-background" suppressHydrationWarning>
       <body
-        className={`${manrope.variable} font-sans antialiased`}
+        className={`${nunito.variable} font-sans antialiased`}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute={["class", "data-theme"]} defaultTheme="system" enableSystem disableTransitionOnChange>
           <SessionProvider user={user}>
-            <AppShell live={{ notices, requests, maintenance }}>{children}</AppShell>
+            <AppShell live={{ notices, requests, maintenance, meetings, activity }}>{children}</AppShell>
           </SessionProvider>
           <Toaster position="top-center" />
         </ThemeProvider>

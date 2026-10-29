@@ -31,6 +31,8 @@ export const visitors: Visitor[] = [
 /* ----------------------------- Notices ------------------------------ */
 
 export const notices: Notice[] = [
+  { id: 'n7', title: 'Invitation to join the Working Committee', body: 'This is an invitation to join the Working Committees (WC) and serve our society. Choose any of these responsibilities:\n1. Security: taking attendance, allocation of positions and monitoring\n2. Drainage and sweeping: coordinate with members and the CMC team in resolving issues\n3. Street lights: coordinate with members and the CMC team in resolving issues\n4. Manjeera water: monitor water release timings and maintenance (repair and flow)\n5. CH maintenance: hall, gym, office room, library and indoor games room\n6. Plantation and parks maintenance: parks (1C, 3A, 4E, 5C), inside CH, vertical roads and East Gate\n7. Maintenance collections: follow up with members on clearing pending dues\n8. Cultural team: monitor and organize all cultural events\n\nEligibility to join:\n1. Zero dues\n2. Give your opinion or approval on posts in the WC group within 24 hours\n3. Acknowledge grievances and queries raised by members in the main group\n4. Be able to coordinate with the Core Committee and CMC teams in resolving issues\n5. Attend CC and WC meetings whenever required for society causes\n\nAfter joining, failing any of these criteria leads to automatic disqualification. The Core Committee will guide and support WC members in their responsibilities. For any queries, reach out to General Secretary Mahesh Masade (98665 73646).', date: '2026-10-29', audience: 'all', audienceLabel: 'All members', category: 'General', attachments: [] },
+  { id: 'n6', title: 'Advance annual maintenance: save 20%', body: 'Monthly maintenance is ₹1,000 (₹12,000 a year). Pay the whole year in advance for just ₹9,600: that is ₹800 a month, and you save ₹2,400.\n\nHow to pay: make a one-time payment of ₹9,600 using the NBH app.\nAfter payment: share the receipt in the group with your name, plot number and road number for recordkeeping.\n\nLast date for advance payment: 31 July 2025. All payments must be made through the NBH app or the society bank account.', date: '2025-07-01', audience: 'all', audienceLabel: 'All members', category: 'Maintenance', attachments: [] },
   { id: 'n1', title: 'Water tanker timing change', body: 'From 1 April, tanker supply on Roads 3A–3C will run 6–8 AM instead of 7–9 AM.', date: '2026-03-29', audience: 'unit', audienceLabel: 'Roads 3A, 3B, 3C', category: 'Maintenance', attachments: [] },
   { id: 'n2', title: 'Notice: AGM 2026 on 14 June', body: 'The Annual General Meeting will be held at the community hall. Agenda and audited statements are attached.', date: '2026-03-27', audience: 'all', audienceLabel: 'All members', category: 'General', attachments: ['AGM_2026_Agenda.pdf', 'Audit_Report_FY25-26.pdf'] },
   { id: 'n3', title: 'Advance maintenance 2026–27 open', body: 'Pay ₹9,600 per plot via UPI or bank transfer before 30 April. Receipts will be issued within 3 working days.', date: '2026-03-18', audience: 'all', audienceLabel: 'All members', category: 'Maintenance', attachments: ['Payment_Instructions.pdf'] },
@@ -41,10 +43,13 @@ export const notices: Notice[] = [
 /* ---------------------------- Documents ----------------------------- */
 
 export const documents: SocietyDocument[] = [
-  { id: 'd1', name: "Reddy's Avenue Byelaws 2026 (chapter-wise)", category: 'Byelaws', date: '2026-01-15', size: '420 KB', type: 'DOCX' },
+  { id: 'd1', name: "Reddy's Avenue Byelaws 2026 (chapter-wise, final, 8 Aug 2026)", category: 'Byelaws', date: '2026-08-08', size: '51 KB', type: 'DOCX', url: '/documents/Reddys_Avenue_Final_Chapter_Wise_Byelaws_2026_08Aug26.docx' },
   { id: 'd2', name: 'Minutes of AGM — 15 June 2025', category: 'Minutes', date: '2025-06-15', size: '310 KB', type: 'PDF' },
-  { id: 'd3', name: 'Balance Sheet — March 2026', category: 'Financial', date: '2026-03-31', size: '280 KB', type: 'PDF' },
-  { id: 'd4', name: 'Sri Rama Navami 2026 — Balance Sheet', category: 'Financial', date: '2026-04-05', size: '150 KB', type: 'PDF' },
+  { id: 'd3', name: 'Monthly Balance Sheet, March 2026', category: 'Financial', date: '2026-03-31', size: '538 KB', type: 'PDF', url: '/documents/balance-sheet-2026-03.pdf' },
+  { id: 'd11', name: 'Monthly Balance Sheet, February 2026', category: 'Financial', date: '2026-02-28', size: '504 KB', type: 'PDF', url: '/documents/balance-sheet-2026-02.pdf' },
+  { id: 'd12', name: 'Monthly Balance Sheet, January 2026', category: 'Financial', date: '2026-01-31', size: '509 KB', type: 'PDF', url: '/documents/balance-sheet-2026-01.pdf' },
+  { id: 'd4', name: 'Sri Rama Navami 2026, Balance Sheet', category: 'Financial', date: '2026-04-13', size: '37 KB', type: 'PDF', url: '/documents/balance-sheet-ramanavami-2026.pdf' },
+  { id: 'd13', name: 'New Year, Bhogi and Republic Day 2026, Balance Sheet', category: 'Financial', date: '2026-02-28', size: '80 KB', type: 'PDF', url: '/documents/balance-sheet-newyear-bhogi-2026.pdf' },
   { id: 'd5', name: 'Vinayaka Chavithi 2025 — Donors List', category: 'Financial', date: '2025-09-23', size: '190 KB', type: 'PDF' },
   { id: 'd6', name: 'Advance Maintenance List 2025', category: 'Financial', date: '2025-06-01', size: '240 KB', type: 'PDF' },
   { id: 'd7', name: 'Telangana Societies Registration Act 2001 (Act 35)', category: 'Legal', date: '2001-01-01', size: '1.2 MB', type: 'PDF' },
@@ -56,9 +61,18 @@ export const documents: SocietyDocument[] = [
 /* ----------------------------- Contacts ----------------------------- */
 
 export const contacts: Contact[] = [
-  { id: 'c1', name: 'Chukka Satyanarayana', role: 'President', phone: '+91 98480 00001', group: 'Committee' },
-  { id: 'c2', name: 'Mahesh Masade', role: 'General Secretary', phone: '+91 98480 00002', group: 'Committee' },
-  { id: 'c3', name: 'Sitharamachandra Rao', role: 'Treasurer', phone: '+91 98480 00003', group: 'Committee' },
+  { id: 'cc1', name: 'Veera Reddy', role: 'President', phone: '+91 94948 00090', group: 'Committee' },
+  { id: 'cc2', name: 'Mahesh Masade', role: 'General Secretary', phone: '+91 98665 73646', group: 'Committee' },
+  { id: 'cc3', name: 'N Jaya Prakash Reddy', role: 'Treasurer', phone: '+91 90009 02210', group: 'Committee' },
+  { id: 'cc4', name: 'G Srilatha', role: 'Vice President', phone: '+91 99490 49126', group: 'Committee' },
+  { id: 'cc5', name: 'Nirmala Yenugu', role: 'Vice President', phone: '+91 79892 41052', group: 'Committee' },
+  { id: 'cc6', name: 'Malisetti Balanagaraju', role: 'Joint Secretary', phone: '+91 98850 06938', group: 'Committee' },
+  { id: 'cc7', name: 'KVV Satyanarayana', role: 'Joint Secretary', phone: '+91 99894 96743', group: 'Committee' },
+  { id: 'cc8', name: 'K Kiran Kumar', role: 'Joint Treasurer', phone: '+91 98808 20040', group: 'Committee' },
+  { id: 'cc9', name: 'Vikas Reddy P', role: 'Joint Treasurer', phone: '+91 72076 67847', group: 'Committee' },
+  { id: 'cc10', name: 'Naveen Viswanatham', role: 'Working Committee', phone: '+91 90003 11096', group: 'Committee' },
+  { id: 'cc11', name: 'Padma', role: 'Working Committee', phone: '+91 98661 41166', group: 'Committee' },
+  { id: 'cc12', name: 'Election Reddy', role: 'Working Committee', phone: '+91 95055 04999', group: 'Committee' },
   { id: 'c4', name: 'Main gate security desk', role: 'Security (24×7)', phone: '+91 40 4000 1001', group: 'Staff' },
   { id: 'c5', name: 'Society office', role: 'Office / Billing', phone: '+91 40 4000 1002', group: 'Staff' },
   { id: 'c6', name: 'Society electrician', role: 'Electrical', phone: '+91 99890 12345', group: 'Staff' },
